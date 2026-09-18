@@ -91,8 +91,6 @@ export default function App() {
     fetchListingsData();
   }, [fetchListingsData]);
 
-  const [mobileView, setMobileView] = useState('both'); // 'both', 'map', 'list'
-
   const handleResetFilters = () => {
     setFilters({
       minPrice: '',
@@ -124,6 +122,7 @@ export default function App() {
       <CitySelector
         selectedCity={selectedCity}
         onSelectCity={setSelectedCity}
+        markets={['Austin', 'Orlando', 'Tampa', 'Dallas']}
       />
 
       <FilterBar
@@ -132,34 +131,15 @@ export default function App() {
         onReset={handleResetFilters}
       />
 
-      {/* Mobile-Only View Switcher */}
-      <div className="mobile-view-tabs">
-        <button
-          type="button"
-          className={`mobile-tab-btn ${mobileView === 'both' ? 'active' : ''}`}
-          onClick={() => setMobileView('both')}
-        >
-          Split View
-        </button>
-        <button
-          type="button"
-          className={`mobile-tab-btn ${mobileView === 'map' ? 'active' : ''}`}
-          onClick={() => setMobileView('map')}
-        >
-          🗺️ Map Only
-        </button>
-        <button
-          type="button"
-          className={`mobile-tab-btn ${mobileView === 'list' ? 'active' : ''}`}
-          onClick={() => setMobileView('list')}
-        >
-          📋 List Only
-        </button>
-      </div>
-
       {/* Main Content Layout: Responsive Map and Property List */}
-      <main className={`main-grid view-${mobileView}`}>
-        <div className="map-card-wrapper">
+      <main className="main-grid">
+        <div style={{
+          backgroundColor: '#ffffff',
+          borderRadius: '12px',
+          overflow: 'hidden',
+          border: '1px solid #e2e8f0',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+        }}>
           <MapView
             listings={listings}
             selectedId={selectedId}
@@ -167,7 +147,7 @@ export default function App() {
           />
         </div>
 
-        <div className="list-card-wrapper">
+        <div>
           <PropertyList
             listings={listings}
             selectedId={selectedId}

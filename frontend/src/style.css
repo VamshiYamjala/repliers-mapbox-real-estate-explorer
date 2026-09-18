@@ -2,18 +2,16 @@
   --primary: #2563eb;
   --primary-hover: #1d4ed8;
   --primary-light: #eff6ff;
-  --primary-ring: rgba(37, 99, 235, 0.2);
   --bg-page: #f8fafc;
   --bg-card: #ffffff;
-  --bg-muted: #f1f5f9;
   --text-main: #0f172a;
   --text-muted: #64748b;
   --text-subtle: #94a3b8;
   --border-color: #e2e8f0;
-  --border-hover: #cbd5e1;
+  --border-focus: #93c5fd;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.12), 0 4px 8px -2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
@@ -26,14 +24,14 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background-color: var(--bg-page);
   color: var(--text-main);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Scrollbar Customization */
+/* Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -43,20 +41,18 @@ body {
 }
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
-/* Container */
+/* App Container */
 .app-container {
   max-width: 1440px;
   margin: 0 auto;
-  padding: 16px 20px 24px;
+  padding: 24px 20px;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
 }
 
 /* Header */
@@ -66,19 +62,18 @@ body {
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 16px;
-  padding-bottom: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--border-color);
 }
 
 .brand-title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   color: #1e3a8a;
   display: flex;
   align-items: center;
   gap: 8px;
-  letter-spacing: -0.02em;
 }
 
 .brand-subtitle {
@@ -98,7 +93,6 @@ body {
   border: 1px solid #bbf7d0;
   padding: 4px 10px;
   border-radius: 9999px;
-  box-shadow: var(--shadow-sm);
 }
 
 .status-dot {
@@ -106,42 +100,7 @@ body {
   height: 7px;
   background-color: #22c55e;
   border-radius: 50%;
-  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
-  animation: pulse-dot 2s infinite;
-}
-
-@keyframes pulse-dot {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-  70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-}
-
-/* Mobile View Mode Switcher */
-.mobile-view-tabs {
-  display: none;
-  background-color: #e2e8f0;
-  padding: 4px;
-  border-radius: 8px;
-  margin-bottom: 14px;
-}
-
-.mobile-tab-btn {
-  flex: 1;
-  padding: 8px 12px;
-  font-size: 13px;
-  font-weight: 600;
-  border: none;
-  background: transparent;
-  color: #475569;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.mobile-tab-btn.active {
-  background-color: #ffffff;
-  color: #1e3a8a;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
 }
 
 /* Main Grid Layout */
@@ -149,71 +108,20 @@ body {
   display: grid;
   grid-template-columns: minmax(400px, 1fr) 420px;
   gap: 20px;
-  align-items: stretch;
-  height: calc(100vh - 230px);
-  min-height: 520px;
+  align-items: start;
 }
 
-.map-card-wrapper {
-  background-color: #ffffff;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-  height: 100%;
-  position: relative;
-}
-
-.list-card-wrapper {
-  height: 100%;
-}
-
-/* Tablet & Mobile Breakpoints */
-@media (max-width: 1024px) {
+@media (max-width: 960px) {
   .main-grid {
-    grid-template-columns: minmax(320px, 1fr) 380px;
-    height: calc(100vh - 250px);
-  }
-}
-
-@media (max-width: 768px) {
-  .mobile-view-tabs {
-    display: flex;
-  }
-
-  .main-grid {
-    display: flex;
-    flex-direction: column;
-    height: auto;
-    gap: 16px;
-  }
-
-  .main-grid.view-map .list-card-wrapper {
-    display: none !important;
-  }
-
-  .main-grid.view-list .map-card-wrapper {
-    display: none !important;
-  }
-
-  .map-card-wrapper {
-    height: 480px;
-  }
-
-  .list-card-wrapper {
-    height: 600px;
-  }
-
-  .app-container {
-    padding: 12px 14px 20px;
+    grid-template-columns: 1fr;
   }
 }
 
 /* Mapbox Popup Overrides */
 .mapboxgl-popup-content {
-  border-radius: 12px !important;
+  border-radius: 10px !important;
   padding: 12px 14px !important;
-  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.18) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15) !important;
   border: 1px solid #e2e8f0 !important;
 }
 

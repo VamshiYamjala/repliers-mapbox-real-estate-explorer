@@ -1,10 +1,5 @@
 export default function CitySelector({ selectedCity, onSelectCity }) {
-  const markets = [
-    { name: 'Austin', state: 'TX', icon: '🤠' },
-    { name: 'Orlando', state: 'FL', icon: '🌴' },
-    { name: 'Tampa', state: 'FL', icon: '☀️' },
-    { name: 'Dallas', state: 'TX', icon: '⭐' }
-  ];
+  const markets = ['Austin', 'Orlando', 'Tampa', 'Dallas'];
 
   return (
     <div style={{
@@ -14,49 +9,56 @@ export default function CitySelector({ selectedCity, onSelectCity }) {
       marginBottom: '14px',
       flexWrap: 'wrap'
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <span style={{ fontSize: '16px' }}>📍</span>
-        <label htmlFor="city-select" style={{ fontSize: '13px', fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-          Market:
-        </label>
-      </div>
+      <label htmlFor="city-select" style={{ fontSize: '14px', fontWeight: 700, color: '#1f2937' }}>
+        Select Market:
+      </label>
 
-      {/* Segmented Market Buttons */}
-      <div style={{
-        display: 'flex',
-        gap: '6px',
-        flexWrap: 'wrap',
-        backgroundColor: '#f1f5f9',
-        padding: '3px',
-        borderRadius: '10px',
-        border: '1px solid #e2e8f0'
-      }}>
-        {markets.map((m) => {
-          const isActive = selectedCity === m.name;
+      {/* Controlled Select Dropdown */}
+      <select
+        id="city-select"
+        value={selectedCity}
+        onChange={(e) => onSelectCity && onSelectCity(e.target.value)}
+        style={{
+          padding: '8px 12px',
+          borderRadius: '6px',
+          border: '1px solid #d1d5db',
+          fontSize: '14px',
+          fontWeight: 600,
+          backgroundColor: '#ffffff',
+          color: '#1f2937',
+          cursor: 'pointer',
+          outline: 'none'
+        }}
+      >
+        {markets.map((city) => (
+          <option key={city} value={city}>
+            {city}
+          </option>
+        ))}
+      </select>
+
+      {/* Quick Select Buttons */}
+      <div style={{ display: 'flex', gap: '8px' }}>
+        {markets.map((city) => {
+          const isActive = selectedCity === city;
           return (
             <button
-              key={m.name}
+              key={city}
               type="button"
-              onClick={() => onSelectCity && onSelectCity(m.name)}
+              onClick={() => onSelectCity && onSelectCity(city)}
               style={{
-                padding: '6px 14px',
-                borderRadius: '7px',
+                padding: '7px 14px',
+                borderRadius: '6px',
                 fontSize: '13px',
                 fontWeight: 600,
-                border: 'none',
-                backgroundColor: isActive ? '#ffffff' : 'transparent',
-                color: isActive ? '#1e3a8a' : '#64748b',
-                boxShadow: isActive ? '0 2px 5px rgba(0,0,0,0.08)' : 'none',
+                border: isActive ? '1px solid #2563eb' : '1px solid #d1d5db',
+                backgroundColor: isActive ? '#2563eb' : '#ffffff',
+                color: isActive ? '#ffffff' : '#374151',
                 cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
+                transition: 'all 0.15s ease'
               }}
             >
-              <span>{m.icon}</span>
-              <span>{m.name}</span>
-              <span style={{ fontSize: '11px', opacity: isActive ? 0.7 : 0.5 }}>{m.state}</span>
+              {city}
             </button>
           );
         })}
