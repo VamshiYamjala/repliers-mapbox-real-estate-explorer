@@ -103,3 +103,21 @@ This document tracks the running progress, architectural choices, implementation
 - **How It Was Verified**:
   - Executed `npm run build` inside `frontend/` to confirm complete JSX/CSS bundling with zero compilation errors.
   - Started Vite development server on `http://localhost:5173` and confirmed with HTTP request that the single-page application and root container are served properly.
+
+---
+
+## Level 5: Build React UI (Static, Mock Data)
+
+- **Goal**: Create the UI components (`PropertyCard`, `PropertyList`, `FilterBar`, `CitySelector`) and layout in `App.jsx`, rendering against realistic mock data shaped like real Repliers listings to iterate on presentation before touching the backend.
+- **What Was Implemented**:
+  - Created `frontend/src/components/PropertyCard.jsx`: Displays property thumbnail, property type badge, price formatted with commas, full address, beds, baths, sqft, and photo count badge. Supports selection state and click handlers.
+  - Created `frontend/src/components/PropertyList.jsx`: Renders a scrollable container with total count header and maps through listing objects, rendering a `PropertyCard` keyed by `listing.mlsNumber`. Includes an empty-state message if results are 0.
+  - Created `frontend/src/components/FilterBar.jsx`: Provides interactive inputs for Min/Max Price, Min Bedrooms (Any, 1+, 2+, 3+, 4+), Min Bathrooms (Any, 1+, 2+, 3+), Property Type (All Types, Residential, Residential Lease, Residential Income), and a Reset button.
+  - Created `frontend/src/components/CitySelector.jsx`: Renders buttons to switch between confirmed markets (`Austin`, `Orlando`, `Tampa`, `Dallas`).
+  - Updated `frontend/src/App.jsx`: Defined a clearly marked `// MOCK DATA — TEMPORARY` array with 3 sample listings matching the Repliers schema. Arranged the layout with `CitySelector` and `FilterBar` at the top, and `MapView` and `PropertyList` in a responsive side-by-side grid below.
+- **Decisions & Configuration**:
+  - Layout uses CSS grid (`minmax(350px, 1fr) 420px`) with fixed scrollable property list height (`600px`) so that the interactive map and cards are viewable simultaneously without page jumps.
+  - Hard-coded props and state are isolated cleanly; no backend endpoints are contacted yet.
+- **How It Was Verified**:
+  - Ran `npm run build` to confirm zero compilation or bundling errors.
+  - Verified live in Vite dev server on `http://localhost:5173`. Confirmed card details, badges, and layout render without console errors.
