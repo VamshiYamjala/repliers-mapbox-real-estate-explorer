@@ -121,3 +121,23 @@ This document tracks the running progress, architectural choices, implementation
 - **How It Was Verified**:
   - Ran `npm run build` to confirm zero compilation or bundling errors.
   - Verified live in Vite dev server on `http://localhost:5173`. Confirmed card details, badges, and layout render without console errors.
+
+---
+
+## Level 6: Build Node.js + Express Backend (Skeleton)
+
+- **Goal**: Scaffold a minimal Node.js + Express backend server responding to an `/api/health` check route with CORS enabled, verifying the runtime, port, and cross-origin setup before introducing Repliers API proxy logic.
+- **What Was Implemented**:
+  - Initialized backend environment in `backend/` with `express`, `cors`, and `dotenv`.
+  - Configured `backend/package.json` with `"type": "module"` for native ES module imports and a `"dev": "node src/server.js"` script.
+  - Created `backend/.env` with `REPLIERS_API_KEY` and `PORT=5000`.
+  - Created `backend/.env.example` with blank keys to document required environment variables without leaking secrets.
+  - Verified `backend/.env` is completely ignored by Git.
+  - Created `backend/src/server.js` configuring Express, `cors()` middleware, and the `GET /api/health` endpoint.
+- **Decisions & Configuration**:
+  - Server listens on port `5000` (or `process.env.PORT` fallback).
+  - CORS middleware enabled so the Vite development server running on `http://localhost:5173` will be able to make API requests without cross-origin browser blocking.
+  - Repliers-specific routes are kept out of this level per strict level-by-level scoping rules.
+- **How It Was Verified**:
+  - Launched backend server with `npm run dev`.
+  - Executed `curl.exe http://localhost:5000/api/health` and received `{"status":"ok"}` with HTTP 200.
