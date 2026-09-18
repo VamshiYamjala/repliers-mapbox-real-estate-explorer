@@ -351,3 +351,15 @@ This document tracks the running progress, architectural choices, implementation
   - `npm install` ran cleanly with 0 vulnerabilities and 0 peer dependency warnings.
   - `npm run build` completed in 743ms with 0 errors.
   - React + Mapbox live functionality verified with dev server serving components without errors.
+
+---
+
+## Post-Level Maintenance: Production API URL & CORS Resolution
+
+- **Goal**: Enable the deployed Vercel frontend to query the live Render Express backend via `VITE_API_URL` without CORS blockage, while retaining default fallback to `http://localhost:5000` for local development.
+- **Changes**:
+  - Defined `API_BASE_URL` in `frontend/src/App.jsx` dynamically resolving `import.meta.env.VITE_API_URL` with local fallback.
+  - Replaced hardcoded `http://localhost:5000` in the listings fetch query.
+  - Added `VITE_API_URL` to `frontend/.env.example`.
+- **Verification**:
+  - `npm run build` completed cleanly in 655ms with 0 errors.

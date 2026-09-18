@@ -37,6 +37,8 @@ const mockListings = [
 ];
 */
 
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
+
 export default function App() {
   const [selectedCity, setSelectedCity] = useState('Austin');
   const [selectedId, setSelectedId] = useState(null);
@@ -68,7 +70,7 @@ export default function App() {
     if (filters.minBathrooms) params.append('minBaths', filters.minBathrooms); // confirmed Repliers param name
     if (filters.propertyType) params.append('propertyType', filters.propertyType);
 
-    fetch(`http://localhost:5000/api/listings?${params.toString()}`)
+    fetch(`${API_BASE_URL}/api/listings?${params.toString()}`)
       .then((res) => {
         if (!res.ok) {
           throw new Error(`Server returned status ${res.status}`);

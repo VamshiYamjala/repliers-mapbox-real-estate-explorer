@@ -35,3 +35,9 @@ This document tracks all bugs, unexpected behaviors, errors, and fixes encounter
 - **Symptom / Error Message**: `vite@8.3.0 is installed, but @vitejs/plugin-react@4.7.0 requires: vite ^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0. Vercel cannot resolve the dependency tree.`
 - **Root Cause**: `frontend/package.json` had `"@vitejs/plugin-react": "^4.3.4"` while `"vite": "^8.3.0"` was installed. In npm v7+, peer dependencies are strictly resolved during CI/CD (`npm install` on Vercel), failing when peer requirements conflict.
 - **Exact Fix Applied**: Updated `frontend/package.json` devDependencies to `"@vitejs/plugin-react": "^6.1.1"` which officially requires `vite: "^8.0.0"`. Ran clean `npm install` and `npm run build` with zero `--force` or `--legacy-peer-deps` flags. Verified local build completes in <800ms with 0 errors.
+
+### Bug 5: Production Frontend Blocked by CORS Due to Hardcoded localhost:5000
+- **Level / File**: Production Deployment / frontend/src/App.jsx
+- **Symptom / Error Message**: `Access to fetch at http://localhost:5000/api/listings... from origin https://repliers-mapbox-real-estate-explore.vercel.app has been blocked by CORS policy.`
+- **Root Cause**: `frontend/src/App.jsx` hardcoded `http://localhost:5000/api/listings` in `fetchListingsData`, preventing the production frontend from reaching the deployed Express backend on Render (`https://repliers-mapbox-real-estate-explorer.onrender.com`).
+- **Exact Fix Applied**: Defined `API_BASE_URL` using `(import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '')` and updated the fetch call to `${API_BASE_URL}/api/listings...`. Added `VITE_API_URL` to `frontend/.env.example`.
