@@ -1,4 +1,7 @@
+import { useEffect, useRef } from 'react';
+
 export default function PropertyCard({ listing, onSelect, isSelected }) {
+  const cardRef = useRef(null);
   const id = listing.id || listing.mlsNumber;
   const price = listing.price ?? listing.listPrice;
   const bedrooms = listing.bedrooms ?? listing.details?.numBedrooms ?? '-';
@@ -19,8 +22,16 @@ export default function PropertyCard({ listing, onSelect, isSelected }) {
       ? (listing.images[0].startsWith('http') ? listing.images[0] : `https://cdn.repliers.io/${listing.images[0]}`)
       : 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=500&auto=format&fit=crop&q=60');
 
+  // Scroll into view when selected from a map marker click
+  useEffect(() => {
+    if (isSelected && cardRef.current) {
+      cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [isSelected]);
+
   return (
     <div
+      ref={cardRef}
       onClick={() => onSelect && onSelect(id)}
       style={{
         display: 'flex',
@@ -28,11 +39,14 @@ export default function PropertyCard({ listing, onSelect, isSelected }) {
         backgroundColor: '#ffffff',
         borderRadius: '10px',
         overflow: 'hidden',
-        boxShadow: isSelected ? '0 0 0 2px #2563eb, 0 4px 12px rgba(37, 99, 235, 0.2)' : '0 2px 8px rgba(0,0,0,0.08)',
+        boxShadow: isSelected
+          ? '0 0 0 2px #2563eb, 0 8px 16px rgba(37, 99, 235, 0.25)'
+          : '0 2px 8px rgba(0,0,0,0.06)',
         marginBottom: '16px',
         cursor: 'pointer',
-        transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-        border: '1px solid #e5e7eb'
+        transition: 'transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease',
+        border: isSelected ? '1px solid #2563eb' : '1px solid #e5e7eb',
+        transform: isSelected ? 'scale(1.01)' : 'none'
       }}
     >
       <div style={{ position: 'relative', width: '100%', height: '160px', backgroundColor: '#f3f4f6' }}>
@@ -63,7 +77,7 @@ export default function PropertyCard({ listing, onSelect, isSelected }) {
           position: 'absolute',
           top: '8px',
           left: '8px',
-          backgroundColor: '#2563eb',
+          backgroundColor: isSelected ? '#1d4ed8' : '#2563eb',
           color: '#fff',
           fontSize: '11px',
           padding: '3px 8px',
@@ -75,7 +89,7 @@ export default function PropertyCard({ listing, onSelect, isSelected }) {
         </span>
       </div>
 
-      <div style={{ padding: '14px' }}>
+      <div style={{ padding: '14px', backgroundColor: isSelected ? '#eff6ff' : '#ffffff' }}>
         <div style={{ fontSize: '20px', fontWeight: 700, color: '#111827', marginBottom: '4px' }}>
           ${typeof price === 'number' ? price.toLocaleString() : (price || 'N/A')}
         </div>

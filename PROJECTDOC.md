@@ -199,3 +199,25 @@ This document tracks the running progress, architectural choices, implementation
 - **How It Was Verified**:
   - Built frontend with `npm run build` with zero errors.
   - Verified live in browser on `http://localhost:5173`: map automatically centers and zooms to Austin, TX, displaying all 20 property markers with clickable popups showing property details.
+
+---
+
+## Level 10: Property Cards + Marker Interaction
+
+- **Goal**: Implement bidirectional synchronization between the property cards in the list and the markers on the map: clicking a marker highlights and scrolls to its matching card, and clicking a card smoothly flies the map to that marker and opens its price popup.
+- **What Was Implemented**:
+  - Lifted state in `frontend/src/App.jsx`: Maintained `selectedId` and `setSelectedId` as the single source of truth for property selection across the application.
+  - Updated `frontend/src/components/MapView.jsx`:
+    - Tracked marker instances in a `markerMapRef` mapping `id -> { marker, popup, lngLat }`.
+    - Added click event listeners to marker DOM elements that invoke `onSelectListing(id)`.
+    - Added reactive `useEffect` watching `[selectedId]`: automatically opens the matching marker's popup and invokes `map.flyTo()` with smooth easing (`zoom: 15`, `speed: 1.2`) to focus on the selected property.
+    - Dynamically styles the selected marker with a distinctive accent color (`#ef4444`).
+  - Updated `frontend/src/components/PropertyCard.jsx`:
+    - Attached a component `ref` and a reactive `useEffect` monitoring `[isSelected]` that calls `scrollIntoView({ behavior: 'smooth', block: 'nearest' })` whenever a marker is clicked on the map.
+    - Enhanced selection styling with an active border ring, elevated drop shadow, and subtle card background tint.
+- **Decisions & Configuration**:
+  - Selection state is exclusively owned by `App.jsx` to eliminate race conditions between list clicks and marker clicks.
+  - Card scrolling uses `block: 'nearest'` so scrolling the list container doesn't abruptly jump the entire page viewport.
+- **How It Was Verified**:
+  - Built frontend with `npm run build` with zero errors.
+  - Verified live in browser at `http://localhost:5173`: clicking various cards flies the map and opens the popup, and clicking markers automatically highlights and scrolls to the card in the list.
