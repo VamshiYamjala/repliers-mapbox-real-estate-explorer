@@ -56,7 +56,10 @@ export default function App() {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch('http://localhost:5000/api/listings?city=Austin')
+    setSelectedId(null);
+
+    const params = new URLSearchParams({ city: selectedCity, resultsPerPage: 20 });
+    fetch(`http://localhost:5000/api/listings?${params.toString()}`)
       .then((res) => {
         if (!res.ok) {
           throw new Error(`Server returned ${res.status}`);
@@ -73,7 +76,7 @@ export default function App() {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [selectedCity]);
 
   const handleResetFilters = () => {
     setFilters({

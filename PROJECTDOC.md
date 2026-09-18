@@ -221,3 +221,23 @@ This document tracks the running progress, architectural choices, implementation
 - **How It Was Verified**:
   - Built frontend with `npm run build` with zero errors.
   - Verified live in browser at `http://localhost:5173`: clicking various cards flies the map and opens the popup, and clicking markers automatically highlights and scrolls to the card in the list.
+
+---
+
+## Level 11: Select and Support 2–4 U.S. Markets
+
+- **Goal**: Make the city selection interface truly interactive so that choosing any of the confirmed U.S. markets (Austin, Orlando, Tampa, Dallas) immediately re-fetches that city's real listings, re-renders the cards, and re-centers the Mapbox map.
+- **What Was Implemented**:
+  - Updated `frontend/src/components/CitySelector.jsx`: Implemented both a controlled `<select>` dropdown and quick-access market buttons hard-coded to exactly the 4 data-confirmed markets: `Austin`, `Orlando`, `Tampa`, and `Dallas`.
+  - Updated `frontend/src/App.jsx`:
+    - Added `selectedCity` as an active dependency to the `useEffect` fetch hook.
+    - Dynamically builds the query string `?city=${selectedCity}&resultsPerPage=20`.
+    - Resets `selectedId` to `null` on city change to clear active selections from previous markets.
+    - Sets loading state to `true` while fetching the newly selected market.
+  - Leveraged `MapView.jsx` existing reactive effect to automatically calculate new coordinate bounds and fly the map to the newly selected city upon listing updates.
+- **Decisions & Configuration**:
+  - Market list is strictly limited to the 4 verified markets (`Austin`, `Orlando`, `Tampa`, `Dallas`) discovered in Level 3, adhering to the rule of never inventing or assuming markets with zero sandbox data.
+- **How It Was Verified**:
+  - Executed automated backend queries verifying that Austin, Orlando, Tampa, and Dallas all return HTTP 200 with matching listings and valid coordinates.
+  - Built frontend with `npm run build` with zero errors.
+  - Tested live in browser at `http://localhost:5173`: switching cities immediately loads that city's listings, updates the card list, and pans the Mapbox map directly to the corresponding city.
