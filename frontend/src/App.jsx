@@ -102,23 +102,20 @@ export default function App() {
   };
 
   return (
-    <div style={{
-      maxWidth: '1440px',
-      margin: '0 auto',
-      padding: '24px 20px',
-      fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      color: '#111827',
-      backgroundColor: '#f3f4f6',
-      minHeight: '100vh',
-      boxSizing: 'border-box'
-    }}>
-      <header style={{ marginBottom: '20px' }}>
-        <h1 style={{ fontSize: '26px', fontWeight: 800, margin: '0 0 6px 0', color: '#1e3a8a' }}>
-          Repliers + Mapbox Real Estate Explorer
-        </h1>
-        <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>
-          Discover properties across top US markets with interactive map exploration.
-        </p>
+    <div className="app-container">
+      <header className="app-header">
+        <div>
+          <h1 className="brand-title">
+            <span>🏡</span> Repliers + Mapbox Explorer
+          </h1>
+          <p className="brand-subtitle">
+            Interactive multi-market real estate explorer powered by Repliers API & Mapbox GL JS
+          </p>
+        </div>
+        <div className="status-badge">
+          <span className="status-dot"></span>
+          Live Sandbox MLS Data
+        </div>
       </header>
 
       {/* Top Controls: City Selection & Filter Controls */}
@@ -134,18 +131,13 @@ export default function App() {
         onReset={handleResetFilters}
       />
 
-      {/* Main Content Layout: Map and Property List side-by-side */}
-      <main style={{
-        display: 'grid',
-        gridTemplateColumns: 'minmax(350px, 1fr) 420px',
-        gap: '20px',
-        alignItems: 'start'
-      }}>
+      {/* Main Content Layout: Responsive Map and Property List */}
+      <main className="main-grid">
         <div style={{
           backgroundColor: '#ffffff',
-          borderRadius: '10px',
+          borderRadius: '12px',
           overflow: 'hidden',
-          border: '1px solid #e5e7eb',
+          border: '1px solid #e2e8f0',
           boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
         }}>
           <MapView

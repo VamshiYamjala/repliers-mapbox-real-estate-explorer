@@ -285,3 +285,22 @@ This document tracks the running progress, architectural choices, implementation
   - Built frontend with `npm run build` with zero errors.
   - Verified loading spinner appears on market switches and filter updates.
   - Verified empty state renders cleanly when setting impossible filters (e.g. Min Price = $10,000,000 in Dallas) and clicking "Reset All Filters" recovers the listings immediately.
+
+---
+
+## Level 15: UI/UX Polish & Responsive Layout
+
+- **Goal**: Polish the visual presentation, typography, spacing, and responsive layout to achieve a clean, professional, demo-ready design suitable for engineering and client demonstrations.
+- **What Was Implemented**:
+  - Re-architected `frontend/src/style.css` with a cohesive design token system (CSS variables for primary blues, subtle slate neutrals, cards, borders, and shadows).
+  - Modernized header with clean branding, descriptive subtitle, and a live MLS sandbox status indicator badge (`● Live Sandbox MLS Data`).
+  - Added responsive CSS grid layout (`.main-grid`) supporting side-by-side desktop view (`minmax(400px, 1fr) 420px`) and responsive single-column mobile/tablet stacking (`@media (max-width: 960px)`).
+  - Enhanced Mapbox popup styling overrides with rounded corners, subtle dropshadows, and clean font hierarchies.
+  - Implemented custom sleek scrollbars and smooth hover transitions.
+  - Imported `style.css` in `frontend/src/main.jsx` and updated `frontend/src/App.jsx` layout wrappers.
+- **Decisions & Configuration**:
+  - Strictly limited changes to layout, typography, and styling—no new data fetching or business logic was added in this level.
+  - Preserved standard browser accessibility patterns and clean contrast ratios across card text, badges, and controls.
+- **How It Was Verified**:
+  - Built frontend with `npm run build` with zero errors in 493ms.
+  - Verified live on `http://localhost:5173` across desktop and narrower viewport widths to ensure layout adapts responsively without clipping or horizontal overflow.
