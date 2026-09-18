@@ -5,14 +5,18 @@ export default function FilterBar({ filters, onFilterChange, onReset }) {
     }
   };
 
+  const activeCount = Object.values(filters || {}).filter(Boolean).length;
+
   const inputStyle = {
-    padding: '8px 12px',
-    borderRadius: '6px',
+    padding: '7px 11px',
+    borderRadius: '7px',
     border: '1px solid #d1d5db',
     fontSize: '13px',
+    fontWeight: 500,
     outline: 'none',
-    backgroundColor: '#fff',
-    color: '#1f2937'
+    backgroundColor: '#ffffff',
+    color: '#0f172a',
+    transition: 'border-color 0.15s, box-shadow 0.15s'
   };
 
   return (
@@ -21,33 +25,40 @@ export default function FilterBar({ filters, onFilterChange, onReset }) {
       flexWrap: 'wrap',
       gap: '12px',
       alignItems: 'center',
-      padding: '14px 16px',
+      padding: '12px 16px',
       backgroundColor: '#ffffff',
-      borderRadius: '8px',
-      border: '1px solid #e5e7eb',
-      marginBottom: '16px'
+      borderRadius: '12px',
+      border: '1px solid #e2e8f0',
+      marginBottom: '16px',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
     }}>
+      {/* Price Filter */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <label style={{ fontSize: '12px', fontWeight: 600, color: '#4b5563' }}>Price:</label>
+        <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'flex', alignItems: 'center', gap: '3px' }}>
+          <span>💲</span> Price:
+        </label>
         <input
           type="number"
           placeholder="Min $"
           value={filters?.minPrice || ''}
           onChange={(e) => handleChange('minPrice', e.target.value)}
-          style={{ ...inputStyle, width: '105px' }}
+          style={{ ...inputStyle, width: '100px' }}
         />
-        <span style={{ color: '#9ca3af' }}>-</span>
+        <span style={{ color: '#94a3b8', fontWeight: 600 }}>–</span>
         <input
           type="number"
           placeholder="Max $"
           value={filters?.maxPrice || ''}
           onChange={(e) => handleChange('maxPrice', e.target.value)}
-          style={{ ...inputStyle, width: '105px' }}
+          style={{ ...inputStyle, width: '100px' }}
         />
       </div>
 
+      {/* Bedrooms Filter */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <label style={{ fontSize: '12px', fontWeight: 600, color: '#4b5563' }}>Beds:</label>
+        <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'flex', alignItems: 'center', gap: '3px' }}>
+          <span>🛏️</span> Beds:
+        </label>
         <select
           value={filters?.minBedrooms || ''}
           onChange={(e) => handleChange('minBedrooms', e.target.value)}
@@ -61,8 +72,11 @@ export default function FilterBar({ filters, onFilterChange, onReset }) {
         </select>
       </div>
 
+      {/* Bathrooms Filter */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <label style={{ fontSize: '12px', fontWeight: 600, color: '#4b5563' }}>Baths:</label>
+        <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'flex', alignItems: 'center', gap: '3px' }}>
+          <span>🛁</span> Baths:
+        </label>
         <select
           value={filters?.minBathrooms || ''}
           onChange={(e) => handleChange('minBathrooms', e.target.value)}
@@ -75,39 +89,64 @@ export default function FilterBar({ filters, onFilterChange, onReset }) {
         </select>
       </div>
 
+      {/* Property Type Filter */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <label style={{ fontSize: '12px', fontWeight: 600, color: '#4b5563' }}>Type:</label>
+        <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'flex', alignItems: 'center', gap: '3px' }}>
+          <span>🏷️</span> Type:
+        </label>
         <select
           value={filters?.propertyType || ''}
           onChange={(e) => handleChange('propertyType', e.target.value)}
           style={inputStyle}
         >
-          <option value="">All Types</option>
+          <option value="">All Property Types</option>
           <option value="Residential">Residential</option>
           <option value="Residential Lease">Residential Lease</option>
           <option value="Residential Income">Residential Income</option>
         </select>
       </div>
 
-      <button
-        onClick={onReset}
-        style={{
-          padding: '8px 14px',
-          backgroundColor: '#f3f4f6',
-          color: '#374151',
-          border: '1px solid #d1d5db',
-          borderRadius: '6px',
-          fontSize: '13px',
-          fontWeight: 500,
-          cursor: 'pointer',
-          marginLeft: 'auto',
-          transition: 'background-color 0.15s'
-        }}
-        onMouseEnter={(e) => e.target.style.backgroundColor = '#e5e7eb'}
-        onMouseLeave={(e) => e.target.style.backgroundColor = '#f3f4f6'}
-      >
-        Reset Filters
-      </button>
+      {/* Right Controls: Active Pill & Reset Button */}
+      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {activeCount > 0 && (
+          <span style={{
+            fontSize: '11px',
+            fontWeight: 600,
+            color: '#2563eb',
+            backgroundColor: '#eff6ff',
+            border: '1px solid #bfdbfe',
+            padding: '4px 8px',
+            borderRadius: '12px'
+          }}>
+            {activeCount} {activeCount === 1 ? 'filter' : 'filters'} active
+          </span>
+        )}
+
+        <button
+          type="button"
+          onClick={onReset}
+          disabled={activeCount === 0}
+          style={{
+            padding: '7px 14px',
+            backgroundColor: activeCount > 0 ? '#f1f5f9' : '#f8fafc',
+            color: activeCount > 0 ? '#1e293b' : '#94a3b8',
+            border: '1px solid #cbd5e1',
+            borderRadius: '7px',
+            fontSize: '12px',
+            fontWeight: 600,
+            cursor: activeCount > 0 ? 'pointer' : 'default',
+            transition: 'all 0.15s ease'
+          }}
+          onMouseEnter={(e) => {
+            if (activeCount > 0) e.target.style.backgroundColor = '#e2e8f0';
+          }}
+          onMouseLeave={(e) => {
+            if (activeCount > 0) e.target.style.backgroundColor = '#f1f5f9';
+          }}
+        >
+          Reset Filters
+        </button>
+      </div>
     </div>
   );
 }

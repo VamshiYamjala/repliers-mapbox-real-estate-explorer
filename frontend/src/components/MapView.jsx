@@ -20,10 +20,17 @@ export default function MapView({ listings = [], selectedId, onSelectListing }) 
       zoom: 11,
     });
 
-    map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
     mapRef.current = map;
 
+    // Handle container resize
+    const resizeObserver = new ResizeObserver(() => {
+      map.resize();
+    });
+    resizeObserver.observe(containerRef.current);
+
     return () => {
+      resizeObserver.disconnect();
       map.remove();
       mapRef.current = null;
     };
@@ -50,22 +57,37 @@ export default function MapView({ listings = [], selectedId, onSelectListing }) 
       // Note: Mapbox expects [lng, lat] order
       const lngLat = [listing.lng, listing.lat];
 
-      const popup = new mapboxgl.Popup({ offset: 25, closeButton: true }).setHTML(`
-        <div style="font-family: sans-serif; padding: 4px;">
-          <div style="font-weight: 700; font-size: 15px; color: #111827; margin-bottom: 2px;">
-            $${typeof listing.price === 'number' ? listing.price.toLocaleString() : (listing.price || 'N/A')}
+      const priceDisplay = typeof listing.price === 'number'
+        ? `$${listing.price.toLocaleString()}`
+        : (listing.price || 'N/A');
+
+      const imageUrl = listing.image
+        || (listing.images && listing.images.length > 0
+          ? (listing.images[0].startsWith('http') ? listing.images[0] : `https://cdn.repliers.io/${listing.images[0]}`)
+          : null);
+
+      const popupHtml = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 220px;">
+          ${imageUrl ? `<img src="${imageUrl}" style="width: 100%; height: 100px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;" alt="${listing.address || ''}" />` : ''}
+          <div style="font-weight: 800; font-size: 16px; color: #1e3a8a; margin-bottom: 2px;">
+            ${priceDisplay}
           </div>
-          <div style="font-size: 12px; color: #4b5563;">
+          <div style="font-size: 12px; font-weight: 500; color: #334155; line-height: 1.3;">
             ${listing.address || ''}${listing.city ? `, ${listing.city}` : ''}
           </div>
-          <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">
-            ${listing.bedrooms ? `${listing.bedrooms} beds • ` : ''}${listing.bathrooms ? `${listing.bathrooms} baths` : ''}
+          <div style="display: flex; gap: 8px; font-size: 11px; font-weight: 600; color: #64748b; margin-top: 6px; border-top: 1px solid #f1f5f9; padding-top: 6px;">
+            ${listing.bedrooms ? `<span>🛏️ ${listing.bedrooms} bds</span>` : ''}
+            ${listing.bathrooms ? `<span>🛁 ${listing.bathrooms} ba</span>` : ''}
+            ${listing.propertyType ? `<span style="margin-left: auto; color: #2563eb;">${listing.propertyType}</span>` : ''}
           </div>
         </div>
-      `);
+      `;
 
+      const popup = new mapboxgl.Popup({ offset: 25, closeButton: true, maxWidth: '240px' }).setHTML(popupHtml);
+
+      const isSelected = selectedId === id;
       const marker = new mapboxgl.Marker({
-        color: selectedId === id ? '#ef4444' : '#2563eb'
+        color: isSelected ? '#ef4444' : '#2563eb'
       })
         .setLngLat(lngLat)
         .setPopup(popup)
@@ -84,7 +106,7 @@ export default function MapView({ listings = [], selectedId, onSelectListing }) 
     });
 
     if (hasValidCoords && !selectedId) {
-      map.fitBounds(bounds, { padding: 50, maxZoom: 14, duration: 1000 });
+      map.fitBounds(bounds, { padding: 50, maxZoom: 14, duration: 800 });
     }
   }, [listings, onSelectListing]);
 
@@ -111,5 +133,15 @@ export default function MapView({ listings = [], selectedId, onSelectListing }) 
     });
   }, [selectedId]);
 
-  return <div ref={containerRef} style={{ width: '100%', height: '600px', borderRadius: '10px' }} />;
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        width: '100%',
+        height: '100%',
+        minHeight: '450px',
+        position: 'relative'
+      }}
+    />
+  );
 }

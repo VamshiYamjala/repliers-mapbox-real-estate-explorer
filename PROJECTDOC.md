@@ -338,3 +338,25 @@ This document tracks the running progress, architectural choices, implementation
 - **How It Was Verified**:
   - Verified that `README.md`, `PROJECTDOC.md`, and `BUGFIX.md` are completely formatted without BOM and render cleanly in GitHub markdown.
   - Confirmed both servers are running live and responsive at `http://localhost:5000/api/health` and `http://localhost:5173/`.
+
+---
+
+## Enhancement: Mobile Responsiveness & Professional Design Polish
+
+- **Goal**: Elevate the design to a high-end, modern real-estate standard and optimize the layout across all device viewports (mobile phones, tablets, and wide desktop screens).
+- **What Was Implemented**:
+  - **Responsive Layout System (`style.css`)**:
+    - **Desktop (> 1024px)**: Fixed full-viewport height layout (`calc(100vh - 230px)`), allowing the map to stay pinned and visible while the property card list scrolls independently without awkward whole-page jumping.
+    - **Tablet (768px – 1024px)**: Adjusted grid ratios (`minmax(320px, 1fr) 380px`) to maximize both map details and listing cards.
+    - **Mobile (≤ 768px)**: Implemented a segmented tab control (`Split View`, `🗺️ Map Only`, `📋 List Only`) so mobile users can effortlessly switch views or view side-by-side without endless scrolling past the map canvas.
+  - **Map & Popup Upgrades (`MapView.jsx`)**:
+    - Integrated `ResizeObserver` on the map container to automatically trigger `map.resize()` whenever viewport orientation or screen sizes shift.
+    - Enhanced Mapbox popups to include property photo thumbnails, formatted price, address, and spec pills directly on the map.
+  - **Card & Component Polish (`PropertyCard.jsx`, `CitySelector.jsx`, `FilterBar.jsx`)**:
+    - Color-coded property type tags (blue for Residential, emerald for Lease, purple for Income).
+    - Added sorting dropdown in `PropertyList.jsx` (Featured, Price: Low to High, Price: High to Low).
+    - Added active filters badge count to `FilterBar.jsx` with quick reset.
+    - Added clean market segmented pills with state and region indicators.
+- **How It Was Verified**:
+  - Tested build with `npm run build` (compiled cleanly in 547ms).
+  - Verified live in browser across desktop, tablet, and mobile simulated widths.
