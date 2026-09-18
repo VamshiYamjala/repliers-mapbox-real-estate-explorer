@@ -52,13 +52,22 @@ export default function App() {
     propertyType: ''
   });
 
-  // Fetch real listings from backend Express proxy
+  // Fetch real listings from backend Express proxy with active filters
   useEffect(() => {
     setLoading(true);
     setError(null);
     setSelectedId(null);
 
-    const params = new URLSearchParams({ city: selectedCity, resultsPerPage: 20 });
+    const params = new URLSearchParams();
+    if (selectedCity) params.append('city', selectedCity);
+    params.append('resultsPerPage', '20');
+
+    if (filters.minPrice) params.append('minPrice', filters.minPrice);
+    if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
+    if (filters.minBedrooms) params.append('minBedrooms', filters.minBedrooms);
+    if (filters.minBathrooms) params.append('minBaths', filters.minBathrooms); // confirmed Repliers param name
+    if (filters.propertyType) params.append('propertyType', filters.propertyType);
+
     fetch(`http://localhost:5000/api/listings?${params.toString()}`)
       .then((res) => {
         if (!res.ok) {
@@ -76,7 +85,7 @@ export default function App() {
       .finally(() => {
         setLoading(false);
       });
-  }, [selectedCity]);
+  }, [selectedCity, filters]);
 
   const handleResetFilters = () => {
     setFilters({

@@ -5,12 +5,15 @@ const router = Router();
 
 router.get('/', async (req, res) => {
   try {
-    const { city, minBedrooms, maxPrice, resultsPerPage } = req.query;
+    const { city, minPrice, maxPrice, minBedrooms, minBaths, propertyType, resultsPerPage } = req.query;
     const params = { resultsPerPage: resultsPerPage || 20 };
 
     if (city) params.city = city;
-    if (minBedrooms) params.minBedrooms = minBedrooms;
+    if (minPrice) params.minPrice = minPrice;
     if (maxPrice) params.maxPrice = maxPrice;
+    if (minBedrooms) params.minBedrooms = minBedrooms;
+    if (minBaths) params.minBaths = minBaths;
+    if (propertyType) params.propertyType = propertyType;
 
     const data = await fetchListings(params);
     const listings = (data.listings || []).map((l) => ({

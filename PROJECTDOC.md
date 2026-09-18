@@ -241,3 +241,25 @@ This document tracks the running progress, architectural choices, implementation
   - Executed automated backend queries verifying that Austin, Orlando, Tampa, and Dallas all return HTTP 200 with matching listings and valid coordinates.
   - Built frontend with `npm run build` with zero errors.
   - Tested live in browser at `http://localhost:5173`: switching cities immediately loads that city's listings, updates the card list, and pans the Mapbox map directly to the corresponding city.
+
+---
+
+## Level 12: Add Filters (Price, Bedrooms, Bathrooms, Property Type, Reset)
+
+- **Goal**: Implement property filtering across all 5 brief-required dimensions (Min/Max Price, Min Bedrooms, Min Bathrooms, Property Type, and Reset) with live query-string synchronization and exact Repliers API parameter validation.
+- **What Was Implemented**:
+  - Researched and confirmed the exact bathroom parameter name from live Repliers OpenAPI documentation (`docs.repliers.io/llms.txt` and reference docs): discovered the parameter is strictly `minBaths` (and `maxBaths`), **not** `minBathrooms` or `bathrooms`.
+  - Updated `backend/src/routes/listings.js`: Extended route handler to accept `minPrice`, `maxPrice`, `minBedrooms`, `minBaths`, and `propertyType` query parameters and pass them through to `fetchListings()`.
+  - Updated `frontend/src/App.jsx`:
+    - Combined `selectedCity` and all active `filters` into dynamic `URLSearchParams`.
+    - Mapped user input `filters.minBathrooms` to the verified `minBaths` query parameter.
+    - Attached `[selectedCity, filters]` to `useEffect` so changing any filter instantly fires a fresh query.
+    - Implemented `handleResetFilters()` clearing all filter values back to initial defaults.
+  - Verified `FilterBar.jsx` controls: Min/Max Price numeric inputs, Min Bedrooms dropdown (`1+`, `2+`, `3+`, `4+`), Min Bathrooms dropdown (`1+`, `2+`, `3+`), Property Type dropdown (`Residential`, `Residential Lease`, `Residential Income`), and the Reset Filters button.
+- **Decisions & Configuration**:
+  - Strictly validated parameter names against Repliers official documentation before writing code to prevent silent filter ignores.
+  - Reset button restores unfiltered city view while preserving the currently selected market.
+- **How It Was Verified**:
+  - Directly tested `curl.exe http://localhost:5000/api/listings?city=Austin&minBedrooms=4&minBaths=2&maxPrice=800000&resultsPerPage=5`: confirmed all 5 returned listings strictly satisfied price <= $800k, beds >= 4, and baths >= 2.
+  - Built frontend with `npm run build` with zero errors.
+  - Verified live on `http://localhost:5173`: setting filters updates the cards and map markers simultaneously in real-time, and clicking "Reset Filters" returns all properties.
