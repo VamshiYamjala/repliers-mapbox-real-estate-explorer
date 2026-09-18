@@ -1,4 +1,6 @@
 ﻿node_modules/
 .env
+.env.*
+SECRETS.md
 dist/
 .DS_Store
