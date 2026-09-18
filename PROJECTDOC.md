@@ -141,3 +141,22 @@ This document tracks the running progress, architectural choices, implementation
 - **How It Was Verified**:
   - Launched backend server with `npm run dev`.
   - Executed `curl.exe http://localhost:5000/api/health` and received `{"status":"ok"}` with HTTP 200.
+
+---
+
+## Level 7: Connect Backend to Repliers
+
+- **Goal**: Connect the Express backend to the external Repliers API, attach the private API key securely on the server side, query listings, and reshape the raw payload into a streamlined, clean response for the frontend.
+- **What Was Implemented**:
+  - Created `backend/src/services/repliersClient.js`: Implements `fetchListings(params)` which builds queries and calls `https://api.repliers.io/listings` with the `REPLIERS-API-KEY` header read from `process.env.REPLIERS_API_KEY`.
+  - Created `backend/src/routes/listings.js`: Exposes `GET /api/listings`, accepts query parameters (`city`, `minBedrooms`, `maxPrice`, `resultsPerPage`), calls `fetchListings()`, maps and extracts clean fields (`id`, `price`, `bedrooms`, `bathrooms`, `propertyType`, `city`, `address`, `lat`, `lng`, `image`, `photoCount`), and returns `{ count, listings }`.
+  - Updated `backend/src/server.js`: Mounted `listingsRouter` at `/api/listings`.
+  - Error Handling: Wrapped upstream calls in `try/catch` block returning HTTP 502 with structured error messaging if the Repliers API fails, without leaking sensitive internals.
+- **Decisions & Configuration**:
+  - Full image URLs are constructed server-side as `https://cdn.repliers.io/${imagePath}` so frontend components consume ready-to-render image URLs.
+  - Latitude and longitude are extracted from `map.latitude` and `map.longitude` and exposed at the root of each listing object for easy mapping.
+  - Front-end is kept untouched during this level per strict level-by-level scoping rules.
+- **How It Was Verified**:
+  - Restarted backend server and tested `curl.exe http://localhost:5000/api/listings?city=Austin&resultsPerPage=2`.
+  - Verified JSON payload returned 2 listings with real IDs, coordinates, prices, and photo URLs, with zero private keys exposed.
+  - Verified filter parameter passing with `minBedrooms=4`.
