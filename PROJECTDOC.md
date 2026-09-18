@@ -338,3 +338,16 @@ This document tracks the running progress, architectural choices, implementation
 - **How It Was Verified**:
   - Verified that `README.md`, `PROJECTDOC.md`, and `BUGFIX.md` are completely formatted without BOM and render cleanly in GitHub markdown.
   - Confirmed both servers are running live and responsive at `http://localhost:5000/api/health` and `http://localhost:5173/`.
+
+---
+
+## Post-Level Maintenance: Vercel Dependency Tree Resolution
+
+- **Goal**: Align frontend devDependencies so cloud platforms like Vercel can run a clean `npm install` without `ERESOLVE` peer dependency errors or requiring workaround flags (`--force`, `--legacy-peer-deps`).
+- **Changes**:
+  - Upgraded `@vitejs/plugin-react` from `^4.3.4` to `^6.1.1` in `frontend/package.json`.
+  - Regenerated `frontend/package-lock.json` with clean dependency tree.
+- **Verification**:
+  - `npm install` ran cleanly with 0 vulnerabilities and 0 peer dependency warnings.
+  - `npm run build` completed in 743ms with 0 errors.
+  - React + Mapbox live functionality verified with dev server serving components without errors.
