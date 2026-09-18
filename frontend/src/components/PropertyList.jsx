@@ -1,6 +1,6 @@
 import PropertyCard from './PropertyCard.jsx';
 
-export default function PropertyList({ listings = [], selectedId, onSelectProperty }) {
+export default function PropertyList({ listings = [], selectedId, onSelectProperty, loading = false }) {
   return (
     <div style={{
       display: 'flex',
@@ -23,7 +23,7 @@ export default function PropertyList({ listings = [], selectedId, onSelectProper
           Available Properties
         </h3>
         <span style={{ fontSize: '13px', color: '#6b7280', fontWeight: 500 }}>
-          {listings.length} {listings.length === 1 ? 'listing' : 'listings'}
+          {loading ? 'Loading...' : `${listings.length} ${listings.length === 1 ? 'listing' : 'listings'}`}
         </span>
       </div>
 
@@ -32,20 +32,28 @@ export default function PropertyList({ listings = [], selectedId, onSelectProper
         overflowY: 'auto',
         padding: '16px'
       }}>
-        {listings.length === 0 ? (
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '60px 16px', color: '#6b7280' }}>
+            <div style={{ fontSize: '28px', marginBottom: '8px', animation: 'spin 1s linear infinite' }}>⏳</div>
+            <p style={{ margin: 0, fontSize: '14px', fontWeight: 500 }}>Loading real listings from Repliers...</p>
+          </div>
+        ) : listings.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 16px', color: '#6b7280' }}>
             <div style={{ fontSize: '28px', marginBottom: '8px' }}>🏠</div>
             <p style={{ margin: 0, fontSize: '14px' }}>No properties found</p>
           </div>
         ) : (
-          listings.map((listing) => (
-            <PropertyCard
-              key={listing.mlsNumber}
-              listing={listing}
-              isSelected={selectedId === listing.mlsNumber}
-              onSelect={onSelectProperty}
-            />
-          ))
+          listings.map((listing) => {
+            const id = listing.id || listing.mlsNumber;
+            return (
+              <PropertyCard
+                key={id}
+                listing={listing}
+                isSelected={selectedId === id}
+                onSelect={onSelectProperty}
+              />
+            );
+          })
         )}
       </div>
     </div>

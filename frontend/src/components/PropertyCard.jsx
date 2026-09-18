@@ -1,15 +1,27 @@
 export default function PropertyCard({ listing, onSelect, isSelected }) {
-  const addressStr = listing.address
-    ? `${listing.address.streetNumber || ''} ${listing.address.streetName || ''} ${listing.address.streetSuffix || ''}`.trim()
-    : 'Address unavailable';
+  const id = listing.id || listing.mlsNumber;
+  const price = listing.price ?? listing.listPrice;
+  const bedrooms = listing.bedrooms ?? listing.details?.numBedrooms ?? '-';
+  const bathrooms = listing.bathrooms ?? listing.details?.numBathrooms ?? '-';
+  const propertyType = listing.propertyType || listing.details?.propertyType || 'Residential';
+  const sqft = listing.sqft || listing.details?.sqft;
+  const city = listing.city || listing.address?.city || '';
+  const state = listing.state || listing.address?.state || '';
 
-  const imageUrl = listing.images && listing.images.length > 0
-    ? (listing.images[0].startsWith('http') ? listing.images[0] : `https://cdn.repliers.io/${listing.images[0]}`)
-    : 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=500&auto=format&fit=crop&q=60';
+  const addressStr = typeof listing.address === 'string'
+    ? listing.address
+    : (listing.address
+      ? `${listing.address.streetNumber || ''} ${listing.address.streetName || ''} ${listing.address.streetSuffix || ''}`.trim()
+      : 'Address unavailable');
+
+  const imageUrl = listing.image
+    || (listing.images && listing.images.length > 0
+      ? (listing.images[0].startsWith('http') ? listing.images[0] : `https://cdn.repliers.io/${listing.images[0]}`)
+      : 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=500&auto=format&fit=crop&q=60');
 
   return (
     <div
-      onClick={() => onSelect && onSelect(listing.mlsNumber)}
+      onClick={() => onSelect && onSelect(id)}
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -59,16 +71,16 @@ export default function PropertyCard({ listing, onSelect, isSelected }) {
           fontWeight: 600,
           textTransform: 'uppercase'
         }}>
-          {listing.details?.propertyType || 'Residential'}
+          {propertyType}
         </span>
       </div>
 
       <div style={{ padding: '14px' }}>
         <div style={{ fontSize: '20px', fontWeight: 700, color: '#111827', marginBottom: '4px' }}>
-          ${listing.listPrice ? listing.listPrice.toLocaleString() : 'N/A'}
+          ${typeof price === 'number' ? price.toLocaleString() : (price || 'N/A')}
         </div>
         <div style={{ fontSize: '13px', color: '#4b5563', marginBottom: '10px' }}>
-          {addressStr}, {listing.address?.city || ''}, {listing.address?.state || ''}
+          {addressStr}{city ? `, ${city}` : ''}{state ? `, ${state}` : ''}
         </div>
         <div style={{
           display: 'flex',
@@ -78,10 +90,10 @@ export default function PropertyCard({ listing, onSelect, isSelected }) {
           borderTop: '1px solid #f3f4f6',
           paddingTop: '8px'
         }}>
-          <span>🛏️ <strong>{listing.details?.numBedrooms ?? '-'}</strong> beds</span>
-          <span>🛁 <strong>{listing.details?.numBathrooms ?? '-'}</strong> baths</span>
-          {listing.details?.sqft && (
-            <span>📐 <strong>{listing.details.sqft}</strong> sqft</span>
+          <span>🛏️ <strong>{bedrooms}</strong> beds</span>
+          <span>🛁 <strong>{bathrooms}</strong> baths</span>
+          {sqft && (
+            <span>📐 <strong>{sqft}</strong> sqft</span>
           )}
         </div>
       </div>

@@ -160,3 +160,22 @@ This document tracks the running progress, architectural choices, implementation
   - Restarted backend server and tested `curl.exe http://localhost:5000/api/listings?city=Austin&resultsPerPage=2`.
   - Verified JSON payload returned 2 listings with real IDs, coordinates, prices, and photo URLs, with zero private keys exposed.
   - Verified filter parameter passing with `minBedrooms=4`.
+
+---
+
+## Level 8: Connect React to Backend
+
+- **Goal**: Connect the React frontend to our local Express backend proxy so that live Repliers property listings are fetched, stored in React state, and rendered in the property list instead of static mock data.
+- **What Was Implemented**:
+  - Updated `frontend/src/App.jsx`: Replaced the mock data state source with a `useEffect` hook fetching `http://localhost:5000/api/listings?city=Austin`. Added `loading` and `error` states to give clear feedback during requests and network failures.
+  - Retired the mock data array into a commented block (`// MOCK DATA — TEMPORARY (retained for rollback reference)`).
+  - Updated `frontend/src/components/PropertyCard.jsx` and `frontend/src/components/PropertyList.jsx`: Enhanced property extraction to seamlessly handle both reshaped backend properties (`id`, `price`, `address`, `bedrooms`, `bathrooms`, `propertyType`, `image`, `photoCount`) and raw schemas.
+  - Added loading indicator state to `PropertyList` while the network request is in flight.
+- **Decisions & Configuration**:
+  - The frontend queries our backend proxy on port 5000, completely preserving secret isolation from browser inspection.
+  - Kept the mock data commented out at the top of `App.jsx` per requirements rather than deleting it.
+  - Both development servers (Vite on port 5173 and Express on port 5000) run simultaneously.
+- **How It Was Verified**:
+  - Executed `npm run build` inside `frontend/` to confirm zero compilation errors.
+  - Verified HTTP 200 responses simultaneously from `http://localhost:5173/` and `http://localhost:5000/api/listings?city=Austin`.
+  - Verified property cards in the browser render live prices (`$369,000`, `$719,900`, etc.), real Austin addresses (`7913 Eudora LN`, `6303 Bexton CIR`), and CDN photo thumbnails matching the backend API output.
