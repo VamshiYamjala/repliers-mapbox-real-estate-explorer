@@ -179,3 +179,23 @@ This document tracks the running progress, architectural choices, implementation
   - Executed `npm run build` inside `frontend/` to confirm zero compilation errors.
   - Verified HTTP 200 responses simultaneously from `http://localhost:5173/` and `http://localhost:5000/api/listings?city=Austin`.
   - Verified property cards in the browser render live prices (`$369,000`, `$719,900`, etc.), real Austin addresses (`7913 Eudora LN`, `6303 Bexton CIR`), and CDN photo thumbnails matching the backend API output.
+
+---
+
+## Level 9: Display Repliers Properties on Mapbox
+
+- **Goal**: Render every live Repliers listing fetched from the backend as an interactive marker on the Mapbox map, complete with custom price and property detail popups.
+- **What Was Implemented**:
+  - Updated `frontend/src/components/MapView.jsx`:
+    - Added reactive `useEffect` monitoring `listings` prop.
+    - Added marker cleanup to remove old markers when listings change.
+    - Explicitly mapped `[listing.lng, listing.lat]` into `mapboxgl.Marker().setLngLat()`, strictly adhering to Mapbox's `[longitude, latitude]` coordinate ordering requirement (as opposed to standard geographical `lat, lng`).
+    - Added `mapboxgl.Popup` to each marker displaying formatted price (`$XXX,XXX`), street address, city, and bedroom/bathroom count.
+    - Implemented automatic viewport fitting via `mapboxgl.LngLatBounds()` and `map.fitBounds()`, dynamically panning and zooming the map to frame all active property markers.
+    - Added map navigation controls (`NavigationControl`) for manual zoom and rotation.
+- **Decisions & Configuration**:
+  - Maintained `mapRef` and `markersRef` to cleanly manage the Mapbox instance and prevent duplicate or lingering markers across React re-renders.
+  - Coordinate order was double-checked to ensure markers land in Austin, TX rather than offshore or on the wrong hemisphere.
+- **How It Was Verified**:
+  - Built frontend with `npm run build` with zero errors.
+  - Verified live in browser on `http://localhost:5173`: map automatically centers and zooms to Austin, TX, displaying all 20 property markers with clickable popups showing property details.
