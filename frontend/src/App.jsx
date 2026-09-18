@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import MapView from './components/MapView.jsx';
 import PropertyList from './components/PropertyList.jsx';
 import FilterBar from './components/FilterBar.jsx';
@@ -53,7 +53,7 @@ export default function App() {
   });
 
   // Fetch real listings from backend Express proxy with active filters
-  useEffect(() => {
+  const fetchListingsData = useCallback(() => {
     setLoading(true);
     setError(null);
     setSelectedId(null);
@@ -71,7 +71,7 @@ export default function App() {
     fetch(`http://localhost:5000/api/listings?${params.toString()}`)
       .then((res) => {
         if (!res.ok) {
-          throw new Error(`Server returned ${res.status}`);
+          throw new Error(`Server returned status ${res.status}`);
         }
         return res.json();
       })
@@ -80,12 +80,16 @@ export default function App() {
       })
       .catch((err) => {
         console.error('Failed to fetch listings:', err);
-        setError(err.message);
+        setError(err.message || 'Unable to connect to server');
       })
       .finally(() => {
         setLoading(false);
       });
   }, [selectedCity, filters]);
+
+  useEffect(() => {
+    fetchListingsData();
+  }, [fetchListingsData]);
 
   const handleResetFilters = () => {
     setFilters({
@@ -130,20 +134,6 @@ export default function App() {
         onReset={handleResetFilters}
       />
 
-      {error && (
-        <div style={{
-          padding: '12px 16px',
-          backgroundColor: '#fee2e2',
-          border: '1px solid #fca5a5',
-          borderRadius: '8px',
-          color: '#991b1b',
-          fontSize: '14px',
-          marginBottom: '16px'
-        }}>
-          ⚠️ Could not connect to backend server ({error}). Ensure the Express server is running on port 5000.
-        </div>
-      )}
-
       {/* Main Content Layout: Map and Property List side-by-side */}
       <main style={{
         display: 'grid',
@@ -171,6 +161,9 @@ export default function App() {
             selectedId={selectedId}
             onSelectProperty={setSelectedId}
             loading={loading}
+            error={error}
+            onRetry={fetchListingsData}
+            onResetFilters={handleResetFilters}
           />
         </div>
       </main>

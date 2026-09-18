@@ -263,3 +263,25 @@ This document tracks the running progress, architectural choices, implementation
   - Directly tested `curl.exe http://localhost:5000/api/listings?city=Austin&minBedrooms=4&minBaths=2&maxPrice=800000&resultsPerPage=5`: confirmed all 5 returned listings strictly satisfied price <= $800k, beds >= 4, and baths >= 2.
   - Built frontend with `npm run build` with zero errors.
   - Verified live on `http://localhost:5173`: setting filters updates the cards and map markers simultaneously in real-time, and clicking "Reset Filters" returns all properties.
+
+---
+
+## Level 14: Error Handling + Loading + Empty States
+
+- **Goal**: Implement robust UI feedback states for loading, empty results, and network/backend errors, ensuring the application is communicative, resilient, and never displays a hanging or blank interface.
+- **What Was Implemented**:
+  - Updated `frontend/src/components/PropertyList.jsx`:
+    - **Loading State**: Displays an animated CSS spinner with informative message ("Searching listings... Retrieving live properties from Repliers API") while requests are in flight.
+    - **Empty State**: Displays an intuitive empty search illustration, clear heading ("No properties match your filters"), actionable suggestions for broadening search criteria, and a "Reset All Filters" button.
+    - **Error State**: Displays a clean warning banner with alert icon, descriptive error message, and a dedicated "Retry Request" button.
+    - **Header Counter**: Dynamically reflects state badges (`Fetching...`, `Error`, or `X found`).
+  - Updated `frontend/src/App.jsx`:
+    - Encapsulated data fetching in a reusable `useCallback` (`fetchListingsData`) passed down to both the initial lifecycle effect and the retry handler.
+    - Ensured `setError(null)` is called immediately upon any new fetch attempt to prevent stale error messages from lingering after a successful retry.
+    - Provided `onResetFilters` and `onRetry` callbacks to `PropertyList`.
+- **Decisions & Configuration**:
+  - Kept error states inline within the property area so users retain full access to their filter controls and can easily adjust inputs or retry without reloading the entire page.
+- **How It Was Verified**:
+  - Built frontend with `npm run build` with zero errors.
+  - Verified loading spinner appears on market switches and filter updates.
+  - Verified empty state renders cleanly when setting impossible filters (e.g. Min Price = $10,000,000 in Dallas) and clicking "Reset All Filters" recovers the listings immediately.
