@@ -1,4 +1,4 @@
-﻿# Project Build Log (PROJECTDOC.md)
+# Project Build Log (PROJECTDOC.md)
 
 This document tracks the running progress, architectural choices, implementations, and verification steps across each development level.
 
@@ -83,3 +83,23 @@ This document tracks the running progress, architectural choices, implementation
 - **How It Was Verified**:
   - Automated Node script queried the live Repliers API with proper headers.
   - Verified all fields directly from the parsed response and verified `backend/sample-data/sample-listing.json`.
+
+---
+
+## Level 4: Mapbox Setup and First Map
+
+- **Goal**: Scaffold a bare React + Vite frontend application, install and configure Mapbox GL JS, and render an interactive street map centered on initial coordinates without listings or backend data yet.
+- **What Was Implemented**:
+  - Scaffolded React 18 frontend inside `frontend/` using Vite and `@vitejs/plugin-react`.
+  - Installed `mapbox-gl` (v3.31.0) and imported its stylesheet (`mapbox-gl/dist/mapbox-gl.css`).
+  - Saved the user's Mapbox public access token in `frontend/.env` as `VITE_MAPBOX_TOKEN` and created `frontend/.env.example`.
+  - Created `frontend/src/components/MapView.jsx` encapsulating the Mapbox GL map instance via React `useRef` and `useEffect`.
+  - Created `frontend/src/App.jsx` to render the `MapView` inside the root layout.
+  - Verified `frontend/.env` is completely ignored by both root and frontend `.gitignore` rules.
+- **Decisions & Configuration**:
+  - Mapbox container uses an explicit height (`500px`) and full width (`100%`) so the WebGL canvas mounts with valid dimensions.
+  - Public token is safely accessed through Vite's `import.meta.env.VITE_MAPBOX_TOKEN`.
+  - Map center initializes at placeholder coordinates `[-80.1918, 25.7617]` (Miami), cleanup function `map.remove()` runs on component unmount.
+- **How It Was Verified**:
+  - Executed `npm run build` inside `frontend/` to confirm complete JSX/CSS bundling with zero compilation errors.
+  - Started Vite development server on `http://localhost:5173` and confirmed with HTTP request that the single-page application and root container are served properly.
