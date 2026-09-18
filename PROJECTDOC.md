@@ -304,3 +304,37 @@ This document tracks the running progress, architectural choices, implementation
 - **How It Was Verified**:
   - Built frontend with `npm run build` with zero errors in 493ms.
   - Verified live on `http://localhost:5173` across desktop and narrower viewport widths to ensure layout adapts responsively without clipping or horizontal overflow.
+
+---
+
+## Level 16: Testing & Quality Verification
+
+- **Goal**: Systematically verify all 25 checklist features from the Master Implementation Document across markets, filters, map interactions, and error states.
+- **Verification Summary**:
+  - **Clean Professional UI**: Modern responsive design tokens, badges, and smooth scrollbars.
+  - **React Frontend & Express Backend**: Concurrently running on ports 5173 and 5000 with CORS enabled.
+  - **Repliers Integration**: Live API queries via `fetchListings()` proxy with secret key protected.
+  - **Mapbox GL JS Integration**: Proper `[lng, lat]` marker rendering with price/address popups and dynamic bounding box auto-fit.
+  - **4 Supported Markets**: `Austin` (1,955 sandbox listings), `Orlando` (290), `Tampa` (216), and `Dallas` (80).
+  - **Bidirectional Interaction**: Card click flies map to marker and opens popup; marker click highlights and smoothly scrolls matching card into view.
+  - **All 5 Filters**: Min Price, Max Price, Min Bedrooms, Min Bathrooms (`minBaths`), and Property Type verified working in isolation and combined. Reset button cleanly restores default query.
+  - **Loading, Empty, and Error States**: Spinner during fetch, friendly "No properties match your filters" card with "Reset All Filters" button on empty results, and error recovery banners with retry handlers.
+- **How It Was Verified**:
+  - Ran automated validation script covering backend health, all 4 markets, composite filters, coordinates, and frontend availability.
+  - All automated and browser tests passed with 100% compliance.
+
+---
+
+## Level 17: Final Demo + Comprehensive Documentation
+
+- **Goal**: Document the complete architecture, data flow, setup instructions, and feature verification in `README.md`, ensuring any developer or reviewer can clone, configure environment keys, and run both servers cleanly.
+- **What Was Implemented**:
+  - Overhauled root `README.md` with comprehensive architectural diagrams, data flow breakdown, step-by-step setup and run instructions for both tiers, directory layout documentation, and a complete feature completion matrix.
+  - Formatted run instructions with explicit commands for both the backend Express service and Vite React frontend.
+  - Validated that `PROJECTDOC.md` and `BUGFIX.md` accurately document every level, configuration decision, bug diagnosis, and resolution.
+- **Decisions & Configuration**:
+  - Maintained clear separation between public and private credentials in documentation.
+  - Documented exact commands for starting both dev servers concurrently on ports 5000 and 5173.
+- **How It Was Verified**:
+  - Verified that `README.md`, `PROJECTDOC.md`, and `BUGFIX.md` are completely formatted without BOM and render cleanly in GitHub markdown.
+  - Confirmed both servers are running live and responsive at `http://localhost:5000/api/health` and `http://localhost:5173/`.
