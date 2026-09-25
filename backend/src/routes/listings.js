@@ -1,6 +1,42 @@
 import { Router } from 'express';
 import { fetchListings } from '../services/repliersClient.js';
 
+function normalizeTourMedia(rawUrl) {
+  if (!rawUrl || typeof rawUrl !== 'string') return null;
+  const directUrl = rawUrl.trim();
+  let embedUrl = directUrl;
+  let provider = 'Virtual Tour';
+  let is3D = false;
+
+  // Transform YouTube watch/short URLs into standard embed URLs to prevent X-Frame-Options blocking
+  const ytMatch = directUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]+)/i);
+  if (ytMatch && ytMatch[1]) {
+    embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}`;
+    provider = 'YouTube Video Tour';
+  } else if (directUrl.includes('matterport.com')) {
+    provider = 'Matterport 3D Tour';
+    is3D = true;
+  } else if (directUrl.includes('propertypanorama.com')) {
+    provider = 'Property Panorama 360';
+  } else if (directUrl.includes('homediary.com')) {
+    provider = 'HomeDiary Virtual Tour';
+  } else if (directUrl.includes('modsy.com')) {
+    provider = 'Modsy 3D Walkthrough';
+    is3D = true;
+  } else if (directUrl.includes('tourfactory.com')) {
+    provider = 'TourFactory Virtual Tour';
+  }
+
+  return {
+    type: 'virtual-tour',
+    url: directUrl,
+    directUrl,
+    embedUrl,
+    provider,
+    is3D,
+  };
+}
+
 const router = Router();
 
 router.get('/', async (req, res) => {
@@ -22,15 +58,7 @@ router.get('/', async (req, res) => {
 
       let media3d = null;
       if (canDisplay && tourUrl) {
-        const isMatterport = tourUrl.includes('matterport.com');
-        media3d = {
-          type: 'virtual-tour',
-          url: tourUrl,
-          provider: isMatterport
-            ? 'Matterport 3D Tour'
-            : (tourUrl.includes('propertypanorama') ? 'Property Panorama 360' : 'Virtual Tour'),
-          is3D: isMatterport,
-        };
+        media3d = normalizeTourMedia(tourUrl);
       }
 
       return {

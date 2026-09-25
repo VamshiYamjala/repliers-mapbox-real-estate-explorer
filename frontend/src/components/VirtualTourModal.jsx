@@ -1,8 +1,23 @@
-import { useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export default function VirtualTourModal({ listing, onClose }) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [showEmbedNotice, setShowEmbedNotice] = useState(false);
+  const isLoadedRef = useRef(false);
+
   useEffect(() => {
     if (!listing) return;
+
+    setIsLoading(true);
+    setShowEmbedNotice(false);
+    isLoadedRef.current = false;
+
+    // Show fallback notice only if the iframe hasn't loaded after 8 seconds
+    const timer = setTimeout(() => {
+      if (!isLoadedRef.current) {
+        setShowEmbedNotice(true);
+      }
+    }, 8000);
 
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
@@ -15,15 +30,17 @@ export default function VirtualTourModal({ listing, onClose }) {
     document.body.style.overflow = 'hidden';
 
     return () => {
+      clearTimeout(timer);
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = originalOverflow;
     };
   }, [listing, onClose]);
 
-  if (!listing || !listing.media3d?.url) return null;
+  if (!listing || !listing.media3d) return null;
 
-  const { url, provider, is3D } = listing.media3d;
-  const tourTitle = is3D ? '3D / Virtual Tour' : '3D / Virtual Tour';
+  const { embedUrl, directUrl, url, provider, is3D } = listing.media3d;
+  const targetEmbedUrl = embedUrl || url;
+  const targetDirectUrl = directUrl || url;
 
   return (
     <div
@@ -50,8 +67,8 @@ export default function VirtualTourModal({ listing, onClose }) {
           borderRadius: '14px',
           width: '100%',
           maxWidth: '960px',
-          height: '82vh',
-          maxHeight: '720px',
+          height: '84vh',
+          maxHeight: '740px',
           display: 'flex',
           flexDirection: 'column',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
@@ -61,7 +78,7 @@ export default function VirtualTourModal({ listing, onClose }) {
       >
         {/* Header */}
         <div style={{
-          padding: '14px 20px',
+          padding: '12px 18px',
           borderBottom: '1px solid #e2e8f0',
           display: 'flex',
           justifyContent: 'space-between',
@@ -74,8 +91,8 @@ export default function VirtualTourModal({ listing, onClose }) {
             <span style={{ fontSize: '20px' }}>{is3D ? '🕶️' : '🔮'}</span>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
-                  {tourTitle}
+                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>
+                  3D / Virtual Tour
                 </h3>
                 <span style={{
                   fontSize: '11px',
@@ -97,24 +114,26 @@ export default function VirtualTourModal({ listing, onClose }) {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <a
-              href={url}
+              href={targetDirectUrl}
               target="_blank"
               rel="noopener noreferrer"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '5px',
-                padding: '6px 12px',
+                padding: '7px 13px',
                 fontSize: '12px',
                 fontWeight: 600,
-                color: '#2563eb',
-                backgroundColor: '#eff6ff',
+                color: '#ffffff',
+                backgroundColor: '#2563eb',
                 borderRadius: '6px',
-                border: '1px solid #bfdbfe',
+                border: '1px solid #1d4ed8',
                 textDecoration: 'none',
                 cursor: 'pointer',
-                transition: 'all 0.15s ease'
+                transition: 'background-color 0.15s ease'
               }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d4ed8'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
             >
               Open in New Tab ↗
             </a>
@@ -126,8 +145,8 @@ export default function VirtualTourModal({ listing, onClose }) {
                 background: 'none',
                 border: '1px solid #cbd5e1',
                 borderRadius: '6px',
-                padding: '5px 10px',
-                fontSize: '16px',
+                padding: '6px 10px',
+                fontSize: '14px',
                 fontWeight: 600,
                 color: '#64748b',
                 cursor: 'pointer',
@@ -142,23 +161,98 @@ export default function VirtualTourModal({ listing, onClose }) {
           </div>
         </div>
 
-        {/* Tour Iframe Container */}
-        <div style={{ flex: 1, position: 'relative', backgroundColor: '#0f172a' }}>
+        {/* Informational banner if provider blocks framing or takes long */}
+        {showEmbedNotice && (
+          <div style={{
+            padding: '8px 16px',
+            backgroundColor: '#eff6ff',
+            borderBottom: '1px solid #bfdbfe',
+            fontSize: '12px',
+            color: '#1e40af',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '8px'
+          }}>
+            <span>
+              ℹ️ If the preview is blank or shows an error, the external provider restricts in-app embedding.
+            </span>
+            <a
+              href={targetDirectUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: '#1d4ed8',
+                fontWeight: 600,
+                textDecoration: 'underline',
+                fontSize: '12px'
+              }}
+            >
+              Open official tour page directly ↗
+            </a>
+          </div>
+        )}
+
+        {/* Tour Container */}
+        <div style={{ flex: 1, position: 'relative', backgroundColor: '#ffffff' }}>
+          {/* Loading Indicator */}
+          {isLoading && (
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#0f172a',
+              zIndex: 1,
+              color: '#f8fafc',
+              gap: '12px'
+            }}>
+              <div style={{
+                width: '36px',
+                height: '36px',
+                border: '3px solid rgba(255,255,255,0.2)',
+                borderTop: '3px solid #60a5fa',
+                borderRadius: '50%',
+                animation: 'spin 0.8s linear infinite'
+              }} />
+              <style>{`
+                @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+              `}</style>
+              <div style={{ fontSize: '13px', fontWeight: 600 }}>Loading 3D / Virtual Tour...</div>
+              <div style={{ fontSize: '11px', color: '#94a3b8' }}>Connecting to {provider || 'external provider'}</div>
+            </div>
+          )}
+
           <iframe
-            src={url}
-            title={`${tourTitle} for ${listing.address || listing.id}`}
+            src={targetEmbedUrl}
+            title={`3D / Virtual Tour for ${listing.address || listing.id}`}
+            onLoad={() => {
+              isLoadedRef.current = true;
+              setIsLoading(false);
+            }}
+            onError={() => {
+              setIsLoading(false);
+              setShowEmbedNotice(true);
+            }}
             style={{
               width: '100%',
               height: '100%',
               border: 'none',
-              display: 'block'
+              display: 'block',
+              backgroundColor: '#ffffff'
             }}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; xr-spatial-tracking"
             allowFullScreen
           />
         </div>
 
-        {/* Footer Note */}
+        {/* Footer */}
         <div style={{
           padding: '8px 16px',
           backgroundColor: '#f8fafc',
@@ -167,10 +261,12 @@ export default function VirtualTourModal({ listing, onClose }) {
           color: '#64748b',
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '8px'
         }}>
           <span>
-            Interactive tour powered by MLS listing media. If tour does not display due to provider security restrictions, use the button above.
+            Tour media is hosted externally by the listing provider. If a tour was deleted by the broker or expired, availability is governed by the source MLS.
           </span>
           <button
             type="button"
@@ -185,7 +281,7 @@ export default function VirtualTourModal({ listing, onClose }) {
               textDecoration: 'underline'
             }}
           >
-            Close
+            Close Viewer
           </button>
         </div>
       </div>
