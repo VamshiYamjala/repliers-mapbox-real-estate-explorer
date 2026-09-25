@@ -3,6 +3,7 @@ import MapView from './components/MapView.jsx';
 import PropertyList from './components/PropertyList.jsx';
 import FilterBar from './components/FilterBar.jsx';
 import CitySelector from './components/CitySelector.jsx';
+import VirtualTourModal from './components/VirtualTourModal.jsx';
 
 /*
 // MOCK DATA — TEMPORARY (retained for rollback reference)
@@ -54,6 +55,7 @@ export default function App() {
     propertyType: ''
   });
 
+  const [activeTourListing, setActiveTourListing] = useState(null);
   const [retryTrigger, setRetryTrigger] = useState(0);
 
   // Fetch real listings from backend Express proxy with active filters & race condition protection
@@ -62,6 +64,7 @@ export default function App() {
     setLoading(true);
     setError(null);
     setSelectedId(null);
+    setActiveTourListing(null);
 
     const params = new URLSearchParams();
     if (selectedCity) params.append('city', selectedCity);
@@ -171,9 +174,18 @@ export default function App() {
             error={error}
             onRetry={handleRetry}
             onResetFilters={handleResetFilters}
+            onOpenTour={setActiveTourListing}
           />
         </div>
       </main>
+
+      {/* Optional 3D / Virtual Tour Modal */}
+      {activeTourListing && (
+        <VirtualTourModal
+          listing={activeTourListing}
+          onClose={() => setActiveTourListing(null)}
+        />
+      )}
     </div>
   );
 }

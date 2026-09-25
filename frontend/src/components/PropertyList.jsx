@@ -7,7 +7,8 @@ export default function PropertyList({
   loading = false,
   error = null,
   onRetry,
-  onResetFilters
+  onResetFilters,
+  onOpenTour
 }) {
   return (
     <div style={{
@@ -169,6 +170,7 @@ export default function PropertyList({
                 listing={listing}
                 isSelected={selectedId === id}
                 onSelect={onSelectProperty}
+                onOpenTour={onOpenTour}
               />
             );
           })

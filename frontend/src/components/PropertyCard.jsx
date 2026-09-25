@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export default function PropertyCard({ listing, onSelect, isSelected }) {
+export default function PropertyCard({ listing, onSelect, isSelected, onOpenTour }) {
   const cardRef = useRef(null);
   const id = listing.id || listing.mlsNumber;
   const price = listing.price ?? listing.listPrice;
@@ -32,6 +32,7 @@ export default function PropertyCard({ listing, onSelect, isSelected }) {
   return (
     <div
       ref={cardRef}
+      className="property-card"
       onClick={() => onSelect && onSelect(id)}
       style={{
         display: 'flex',
@@ -87,6 +88,28 @@ export default function PropertyCard({ listing, onSelect, isSelected }) {
         }}>
           {propertyType}
         </span>
+
+        {/* Optional 3D / Virtual Tour Badge */}
+        {listing.media3d?.url && (
+          <span style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+            backgroundColor: 'rgba(30, 27, 75, 0.9)',
+            backdropFilter: 'blur(3px)',
+            color: '#e0e7ff',
+            fontSize: '10px',
+            padding: '3px 7px',
+            borderRadius: '4px',
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+          }}>
+            {listing.media3d.is3D ? '🕶️ 3D TOUR' : '🔮 TOUR'}
+          </span>
+        )}
       </div>
 
       <div style={{ padding: '14px', backgroundColor: isSelected ? '#eff6ff' : '#ffffff' }}>
@@ -110,6 +133,49 @@ export default function PropertyCard({ listing, onSelect, isSelected }) {
             <span>📐 <strong>{sqft}</strong> sqft</span>
           )}
         </div>
+
+        {/* Optional 3D / Virtual Tour Action Button */}
+        {listing.media3d?.url && (
+          <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed #e2e8f0' }}>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onOpenTour) onOpenTour(listing);
+              }}
+              style={{
+                width: '100%',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                padding: '7px 12px',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#4338ca',
+                backgroundColor: '#eef2ff',
+                border: '1px solid #c7d2fe',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#e0e7ff';
+                e.currentTarget.style.borderColor = '#a5b4fc';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#eef2ff';
+                e.currentTarget.style.borderColor = '#c7d2fe';
+              }}
+            >
+              <span>{listing.media3d.is3D ? '🕶️' : '🔮'}</span>
+              <span>3D / Virtual Tour</span>
+              <span style={{ fontSize: '10px', opacity: 0.75, fontWeight: 500 }}>
+                ({listing.media3d.provider || 'Interactive'})
+              </span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

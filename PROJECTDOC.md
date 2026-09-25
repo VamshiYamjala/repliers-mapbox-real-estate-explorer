@@ -376,3 +376,21 @@ This document tracks the running progress, architectural choices, implementation
 - **Verification**:
   - Validated via automated Chrome DevTools Protocol tests across Austin, Orlando, Tampa, and Dallas: 0 canceled requests, 0 console errors, 100% synchronized state.
   - `npm run build` completed cleanly in 638ms with 0 errors.
+
+---
+
+## Post-Level Feature: Optional 3D / Virtual Tour Experience
+
+- **Goal**: Add support for an optional 3D / Virtual Tour experience across properties, driven strictly by real MLS data discovered in the live Repliers API without inventing fake assets or altering the existing search and map architecture.
+- **Data Discovery**:
+  - Inspected live Repliers API listings across all candidate markets.
+  - Confirmed 0 raw 3D mesh files (`.glb`/`.gltf`), but abundant interactive virtual tours (Matterport 3D, Property Panorama 360, YouTube walkthroughs, HomeDiary) across Orlando (74%), Tampa (73%), and Austin (25%).
+- **Changes**:
+  - `backend/src/routes/listings.js`: Normalized `media3d` (`type`, `url`, `provider`, `is3D`) respecting MLS display permissions.
+  - `frontend/src/components/VirtualTourModal.jsx`: Created lightweight, responsive on-demand modal with iframe support (`allow="xr-spatial-tracking; fullscreen"`) and external new-tab fallback.
+  - `frontend/src/components/PropertyCard.jsx`: Added conditional `3D / Virtual Tour` button and thumbnail badge when `media3d` exists, rendering normal details when absent.
+  - `frontend/src/components/PropertyList.jsx` & `frontend/src/App.jsx`: Connected modal launch state without affecting Mapbox or search logic.
+- **Verification**:
+  - Validated in browser: 16 Orlando cards and 5 Austin cards showed tour buttons; Dallas showed clean fallback with zero broken buttons or links.
+  - Clicking tour buttons loaded the interactive modal without background performance overhead.
+  - `npm run build` completed in 586ms with 0 compilation errors.
