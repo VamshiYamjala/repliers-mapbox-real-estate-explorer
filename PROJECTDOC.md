@@ -363,3 +363,16 @@ This document tracks the running progress, architectural choices, implementation
   - Added `VITE_API_URL` to `frontend/.env.example`.
 - **Verification**:
   - `npm run build` completed cleanly in 655ms with 0 errors.
+
+---
+
+## Post-Level Maintenance: Mapbox Tile Cancellation & Async Race Condition Fix
+
+- **Goal**: Eliminate spurious red `(canceled)` vector tile requests in DevTools Network tab during city switching, and prevent asynchronous race conditions when switching between markets rapidly.
+- **Changes**:
+  - Removed `<React.StrictMode>` from `frontend/src/main.jsx` to prevent WebGL map double-mounting and immediate teardown (`map.remove()`).
+  - Added `CITY_CENTERS` coordinate dictionary and `duration: 0` for `fitBounds` in `frontend/src/components/MapView.jsx` to prevent requesting and aborting intermediate flight-path tiles.
+  - Implemented `AbortController` in `frontend/src/App.jsx` for `/api/listings` fetch calls with `API_BASE_URL` preserved.
+- **Verification**:
+  - Validated via automated Chrome DevTools Protocol tests across Austin, Orlando, Tampa, and Dallas: 0 canceled requests, 0 console errors, 100% synchronized state.
+  - `npm run build` completed cleanly in 638ms with 0 errors.

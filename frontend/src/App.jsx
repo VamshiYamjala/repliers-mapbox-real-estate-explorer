@@ -54,8 +54,11 @@ export default function App() {
     propertyType: ''
   });
 
-  // Fetch real listings from backend Express proxy with active filters
-  const fetchListingsData = useCallback(() => {
+  const [retryTrigger, setRetryTrigger] = useState(0);
+
+  // Fetch real listings from backend Express proxy with active filters & race condition protection
+  useEffect(() => {
+    const controller = new AbortController();
     setLoading(true);
     setError(null);
     setSelectedId(null);
@@ -70,7 +73,9 @@ export default function App() {
     if (filters.minBathrooms) params.append('minBaths', filters.minBathrooms); // confirmed Repliers param name
     if (filters.propertyType) params.append('propertyType', filters.propertyType);
 
-    fetch(`${API_BASE_URL}/api/listings?${params.toString()}`)
+    fetch(`${API_BASE_URL}/api/listings?${params.toString()}`, {
+      signal: controller.signal
+    })
       .then((res) => {
         if (!res.ok) {
           throw new Error(`Server returned status ${res.status}`);
@@ -81,17 +86,24 @@ export default function App() {
         setListings(data.listings || []);
       })
       .catch((err) => {
+        if (err.name === 'AbortError') return; // Ignore intentional cancellation
         console.error('Failed to fetch listings:', err);
         setError(err.message || 'Unable to connect to server');
       })
       .finally(() => {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       });
-  }, [selectedCity, filters]);
 
-  useEffect(() => {
-    fetchListingsData();
-  }, [fetchListingsData]);
+    return () => {
+      controller.abort();
+    };
+  }, [selectedCity, filters, retryTrigger]);
+
+  const handleRetry = useCallback(() => {
+    setRetryTrigger((prev) => prev + 1);
+  }, []);
 
   const handleResetFilters = () => {
     setFilters({
@@ -146,6 +158,7 @@ export default function App() {
             listings={listings}
             selectedId={selectedId}
             onSelectListing={setSelectedId}
+            selectedCity={selectedCity}
           />
         </div>
 
@@ -156,7 +169,7 @@ export default function App() {
             onSelectProperty={setSelectedId}
             loading={loading}
             error={error}
-            onRetry={fetchListingsData}
+            onRetry={handleRetry}
             onResetFilters={handleResetFilters}
           />
         </div>

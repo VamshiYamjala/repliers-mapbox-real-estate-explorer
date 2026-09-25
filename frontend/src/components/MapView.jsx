@@ -4,7 +4,14 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
-export default function MapView({ listings = [], selectedId, onSelectListing }) {
+const CITY_CENTERS = {
+  Austin: [-97.7431, 30.2672],
+  Orlando: [-81.3792, 28.5383],
+  Tampa: [-82.4572, 27.9506],
+  Dallas: [-81.1800, 35.3100]
+};
+
+export default function MapView({ listings = [], selectedId, onSelectListing, selectedCity }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markerMapRef = useRef(new Map());
@@ -13,10 +20,12 @@ export default function MapView({ listings = [], selectedId, onSelectListing }) 
   useEffect(() => {
     if (!containerRef.current) return;
 
+    const initialCenter = (selectedCity && CITY_CENTERS[selectedCity]) || [-97.7431, 30.2672];
+
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [-97.7431, 30.2672], // Austin, TX
+      center: initialCenter,
       zoom: 11,
     });
 
@@ -84,7 +93,14 @@ export default function MapView({ listings = [], selectedId, onSelectListing }) 
     });
 
     if (hasValidCoords && !selectedId) {
-      map.fitBounds(bounds, { padding: 50, maxZoom: 14, duration: 1000 });
+      const applyBounds = () => {
+        map.fitBounds(bounds, { padding: 50, maxZoom: 14, duration: 0 });
+      };
+      if (map.loaded()) {
+        applyBounds();
+      } else {
+        map.once('load', applyBounds);
+      }
     }
   }, [listings, onSelectListing]);
 

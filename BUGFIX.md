@@ -41,3 +41,15 @@ This document tracks all bugs, unexpected behaviors, errors, and fixes encounter
 - **Symptom / Error Message**: `Access to fetch at http://localhost:5000/api/listings... from origin https://repliers-mapbox-real-estate-explore.vercel.app has been blocked by CORS policy.`
 - **Root Cause**: `frontend/src/App.jsx` hardcoded `http://localhost:5000/api/listings` in `fetchListingsData`, preventing the production frontend from reaching the deployed Express backend on Render (`https://repliers-mapbox-real-estate-explorer.onrender.com`).
 - **Exact Fix Applied**: Defined `API_BASE_URL` using `(import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '')` and updated the fetch call to `${API_BASE_URL}/api/listings...`. Added `VITE_API_URL` to `frontend/.env.example`.
+
+### Bug 6: Mapbox Vector Tile Cancellations & City Switch Async Race Conditions
+- **Level / File**: frontend/src/App.jsx, frontend/src/components/MapView.jsx, frontend/src/main.jsx
+- **Symptom / Error Message**: Red `*.vector.pbf (canceled)` requests with `net::ERR_ABORTED` in DevTools Network tab when switching markets. During rapid city switches, older API responses overwrote newer market selections.
+- **Root Cause**: 
+  1. React 18 `<React.StrictMode>` dev double-mounting mounted `MapView`, started fetching Austin tiles, and immediately ran `map.remove()`, aborting in-flight tiles.
+  2. Initial map center was hardcoded to Austin `[-97.7431, 30.2672]`, and `map.fitBounds` ran with `duration: 1000`, causing Mapbox to abort Austin and intermediate flight tiles when switching cities.
+  3. `fetchListings` lacked request cancellation (`AbortController`), allowing stale queries to overwrite newer city state.
+- **Exact Fix Applied**:
+  1. Removed `<React.StrictMode>` wrapper in `frontend/src/main.jsx` to prevent WebGL dev double-destruction.
+  2. Added `CITY_CENTERS` coordinate dictionary and `duration: 0` for `fitBounds` in `frontend/src/components/MapView.jsx` to jump directly to destination bounds without aborting intermediate zoom tiles.
+  3. Integrated `AbortController` in `frontend/src/App.jsx` to abort stale in-flight listings queries on city/filter switches. Verified clean build and 0 canceled requests via CDP testing.
