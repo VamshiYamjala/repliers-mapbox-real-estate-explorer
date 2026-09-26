@@ -38,25 +38,41 @@ export default function MapView({ listings = [], selectedId, onSelectListing, se
     };
   }, []);
 
-  // Update Markers when listings change
+  const prevCityRef = useRef(selectedCity);
+
+  // Update Markers incrementally when listings change
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    // Clear previous markers
-    markerMapRef.current.forEach(({ marker }) => marker.remove());
-    markerMapRef.current.clear();
+    const cityChanged = prevCityRef.current !== selectedCity;
+    if (cityChanged) {
+      prevCityRef.current = selectedCity;
+    }
+
+    const currentIds = new Set((listings || []).map((l) => l.id || l.mlsNumber));
+
+    // Remove markers that are no longer in current listings (e.g. city change or filter change)
+    for (const [id, { marker }] of markerMapRef.current.entries()) {
+      if (cityChanged || !currentIds.has(id)) {
+        marker.remove();
+        markerMapRef.current.delete(id);
+      }
+    }
 
     if (!listings || listings.length === 0) return;
 
+    const isInitialBatch = markerMapRef.current.size === 0;
     const bounds = new mapboxgl.LngLatBounds();
-    let hasValidCoords = false;
+    let hasNewCoords = false;
 
     listings.forEach((listing) => {
       if (listing.lat == null || listing.lng == null) return;
       const id = listing.id || listing.mlsNumber;
 
-      // Note: Mapbox expects [lng, lat] order
+      // If marker already exists, preserve it without recreating
+      if (markerMapRef.current.has(id)) return;
+
       const lngLat = [listing.lng, listing.lat];
 
       const popup = new mapboxgl.Popup({ offset: 25, closeButton: true }).setHTML(`
@@ -89,10 +105,11 @@ export default function MapView({ listings = [], selectedId, onSelectListing, se
 
       markerMapRef.current.set(id, { marker, popup, lngLat });
       bounds.extend(lngLat);
-      hasValidCoords = true;
+      hasNewCoords = true;
     });
 
-    if (hasValidCoords && !selectedId) {
+    // Only auto-fit bounds on initial search/filter/city change, NOT on incremental pagination ("More Properties")
+    if (isInitialBatch && hasNewCoords && !selectedId) {
       const applyBounds = () => {
         map.fitBounds(bounds, { padding: 50, maxZoom: 14, duration: 0 });
       };
@@ -102,7 +119,18 @@ export default function MapView({ listings = [], selectedId, onSelectListing, se
         map.once('load', applyBounds);
       }
     }
-  }, [listings, onSelectListing]);
+  }, [listings, selectedCity, onSelectListing]);
+
+  // Update marker selection colors when selectedId changes
+  useEffect(() => {
+    markerMapRef.current.forEach(({ marker }, id) => {
+      const el = marker.getElement();
+      const path = el.querySelector('svg path[fill]');
+      if (path) {
+        path.setAttribute('fill', id === selectedId ? '#ef4444' : '#2563eb');
+      }
+    });
+  }, [selectedId]);
 
   // Handle flyTo and popup opening when selectedId changes
   useEffect(() => {

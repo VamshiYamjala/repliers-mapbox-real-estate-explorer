@@ -38,6 +38,30 @@ const mockListings = [
 ];
 */
 
+// Deterministic Media-Priority Ranking:
+// Priority 3: Genuine 3D walkthrough (Modsy 3D, Matterport 3D)
+// Priority 2: Valid video walkthrough (YouTube)
+// Priority 1: Other valid virtual tour
+// Priority 0: Normal property listing without special tour/video
+export function getMediaPriority(listing) {
+  if (!listing || !listing.media3d) return 0;
+  if (listing.media3d.is3D || listing.media3d.type === '3d-walkthrough') return 3;
+  if (listing.media3d.type === 'video-tour') return 2;
+  if (listing.media3d.type === 'virtual-tour') return 1;
+  return 0;
+}
+
+export function sortListingsByMediaPriority(list) {
+  return [...list].sort((a, b) => {
+    const priorityA = getMediaPriority(a);
+    const priorityB = getMediaPriority(b);
+    if (priorityB !== priorityA) {
+      return priorityB - priorityA; // Higher priority first
+    }
+    return 0;
+  });
+}
+
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
 
 export default function App() {
@@ -46,6 +70,13 @@ export default function App() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Pagination states
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState(null);
+  const [totalCount, setTotalCount] = useState(0);
 
   const [filters, setFilters] = useState({
     minPrice: '',
@@ -63,11 +94,18 @@ export default function App() {
     const controller = new AbortController();
     setLoading(true);
     setError(null);
+    setLoadMoreError(null);
     setSelectedId(null);
     setActiveTourListing(null);
 
+    // Reset pagination to page 1 on city or filter change
+    setPage(1);
+    setHasMore(true);
+    setLoadingMore(false);
+
     const params = new URLSearchParams();
     if (selectedCity) params.append('city', selectedCity);
+    params.append('pageNum', '1');
     params.append('resultsPerPage', '20');
 
     if (filters.minPrice) params.append('minPrice', filters.minPrice);
@@ -86,7 +124,11 @@ export default function App() {
         return res.json();
       })
       .then((data) => {
-        setListings(data.listings || []);
+        const rawListings = data.listings || [];
+        setListings(sortListingsByMediaPriority(rawListings));
+        setPage(data.page || 1);
+        setHasMore(data.hasMore ?? (data.page < data.numPages && rawListings.length > 0));
+        setTotalCount(data.totalCount != null ? data.totalCount : rawListings.length);
       })
       .catch((err) => {
         if (err.name === 'AbortError') return; // Ignore intentional cancellation
@@ -103,6 +145,52 @@ export default function App() {
       controller.abort();
     };
   }, [selectedCity, filters, retryTrigger]);
+
+  // Load next page of properties without replacing previously loaded items
+  const handleLoadMore = useCallback(() => {
+    if (loadingMore || loading || !hasMore) return;
+
+    setLoadingMore(true);
+    setLoadMoreError(null);
+
+    const nextPage = page + 1;
+    const params = new URLSearchParams();
+    if (selectedCity) params.append('city', selectedCity);
+    params.append('pageNum', String(nextPage));
+    params.append('resultsPerPage', '20');
+
+    if (filters.minPrice) params.append('minPrice', filters.minPrice);
+    if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
+    if (filters.minBedrooms) params.append('minBedrooms', filters.minBedrooms);
+    if (filters.minBathrooms) params.append('minBaths', filters.minBathrooms);
+    if (filters.propertyType) params.append('propertyType', filters.propertyType);
+
+    fetch(`${API_BASE_URL}/api/listings?${params.toString()}`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Server returned status ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        const incoming = data.listings || [];
+        setListings((prev) => {
+          const existingIds = new Set(prev.map((l) => l.id));
+          const newItems = incoming.filter((l) => !existingIds.has(l.id));
+          return sortListingsByMediaPriority([...prev, ...newItems]);
+        });
+        setPage(data.page || nextPage);
+        setHasMore(data.hasMore ?? (data.page < data.numPages && incoming.length > 0));
+        if (data.totalCount != null) setTotalCount(data.totalCount);
+      })
+      .catch((err) => {
+        console.error('Failed to load more properties:', err);
+        setLoadMoreError(err.message || 'Unable to load more properties. Please try again.');
+      })
+      .finally(() => {
+        setLoadingMore(false);
+      });
+  }, [loadingMore, loading, hasMore, page, selectedCity, filters]);
 
   const handleRetry = useCallback(() => {
     setRetryTrigger((prev) => prev + 1);
@@ -175,6 +263,11 @@ export default function App() {
             onRetry={handleRetry}
             onResetFilters={handleResetFilters}
             onOpenTour={setActiveTourListing}
+            hasMore={hasMore}
+            loadingMore={loadingMore}
+            loadMoreError={loadMoreError}
+            onLoadMore={handleLoadMore}
+            totalCount={totalCount}
           />
         </div>
       </main>

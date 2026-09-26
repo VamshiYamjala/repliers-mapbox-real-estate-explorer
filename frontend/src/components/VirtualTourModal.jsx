@@ -88,21 +88,21 @@ export default function VirtualTourModal({ listing, onClose }) {
           gap: '8px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '20px' }}>{is3D ? '🕶️' : '🔮'}</span>
+            <span style={{ fontSize: '20px' }}>{is3D ? '🕶️' : '▶️'}</span>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>
-                  3D / Virtual Tour
+                  {is3D ? '3D Walkthrough' : (listing.media3d.type === 'video-tour' ? 'Video Tour' : 'Virtual Tour')}
                 </h3>
                 <span style={{
                   fontSize: '11px',
                   fontWeight: 600,
                   padding: '2px 8px',
                   borderRadius: '12px',
-                  backgroundColor: '#e0e7ff',
-                  color: '#3730a3'
+                  backgroundColor: is3D ? '#e0e7ff' : '#fee2e2',
+                  color: is3D ? '#3730a3' : '#991b1b'
                 }}>
-                  {provider || 'Virtual Tour'}
+                  {provider || (is3D ? '3D Tour' : 'Video')}
                 </span>
               </div>
               <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>
@@ -266,7 +266,9 @@ export default function VirtualTourModal({ listing, onClose }) {
           gap: '8px'
         }}>
           <span>
-            Tour media is hosted externally by the listing provider. If a tour was deleted by the broker or expired, availability is governed by the source MLS.
+            {is3D
+              ? 'Interactive 3D model powered by MLS listing media.'
+              : 'Video walkthrough hosted on YouTube, provided by MLS listing agent.'}
           </span>
           <button
             type="button"

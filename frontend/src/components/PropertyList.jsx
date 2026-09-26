@@ -8,7 +8,12 @@ export default function PropertyList({
   error = null,
   onRetry,
   onResetFilters,
-  onOpenTour
+  onOpenTour,
+  hasMore = false,
+  loadingMore = false,
+  loadMoreError = null,
+  onLoadMore,
+  totalCount = 0
 }) {
   return (
     <div style={{
@@ -162,18 +167,128 @@ export default function PropertyList({
 
         {/* State 4: Normal Results View */}
         {!loading && !error && listings.length > 0 && (
-          listings.map((listing) => {
-            const id = listing.id || listing.mlsNumber;
-            return (
-              <PropertyCard
-                key={id}
-                listing={listing}
-                isSelected={selectedId === id}
-                onSelect={onSelectProperty}
-                onOpenTour={onOpenTour}
-              />
-            );
-          })
+          <>
+            {listings.map((listing) => {
+              const id = listing.id || listing.mlsNumber;
+              return (
+                <PropertyCard
+                  key={id}
+                  listing={listing}
+                  isSelected={selectedId === id}
+                  onSelect={onSelectProperty}
+                  onOpenTour={onOpenTour}
+                />
+              );
+            })}
+
+            {/* Pagination Controls */}
+            <div style={{
+              padding: '16px 8px 8px 8px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '10px',
+              borderTop: '1px solid #e5e7eb',
+              marginTop: '8px'
+            }}>
+              <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>
+                {listings.length} properties shown
+                {totalCount > 0 ? ` of ${totalCount}` : ''}
+              </div>
+
+              {hasMore ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={onLoadMore}
+                    disabled={loadingMore}
+                    style={{
+                      width: '100%',
+                      maxWidth: '320px',
+                      padding: '10px 20px',
+                      backgroundColor: loadingMore ? '#93c5fd' : '#2563eb',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: loadingMore ? 'not-allowed' : 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)',
+                      transition: 'background-color 0.15s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!loadingMore) e.currentTarget.style.backgroundColor = '#1d4ed8';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!loadingMore) e.currentTarget.style.backgroundColor = '#2563eb';
+                    }}
+                  >
+                    {loadingMore ? (
+                      <>
+                        <span style={{
+                          display: 'inline-block',
+                          width: '14px',
+                          height: '14px',
+                          border: '2px solid rgba(255,255,255,0.4)',
+                          borderTop: '2px solid #ffffff',
+                          borderRadius: '50%',
+                          animation: 'spin 0.8s linear infinite'
+                        }} />
+                        <span>Loading more properties...</span>
+                      </>
+                    ) : (
+                      <span>More Properties</span>
+                    )}
+                  </button>
+
+                  {loadMoreError && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontSize: '12px',
+                      color: '#dc2626',
+                      marginTop: '4px'
+                    }}>
+                      <span>Unable to load more properties. Please try again.</span>
+                      <button
+                        type="button"
+                        onClick={onLoadMore}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#2563eb',
+                          fontWeight: 600,
+                          textDecoration: 'underline',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          padding: 0
+                        }}
+                      >
+                        Try Again
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div style={{
+                  fontSize: '12px',
+                  color: '#64748b',
+                  fontStyle: 'italic',
+                  padding: '6px 14px',
+                  backgroundColor: '#f1f5f9',
+                  borderRadius: '6px',
+                  textAlign: 'center'
+                }}>
+                  No more properties available for this search.
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>

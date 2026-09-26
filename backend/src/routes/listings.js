@@ -5,34 +5,47 @@ function normalizeTourMedia(rawUrl) {
   if (!rawUrl || typeof rawUrl !== 'string') return null;
   const directUrl = rawUrl.trim();
   let embedUrl = directUrl;
-  let provider = 'Virtual Tour';
+  let type = null;
+  let provider = '';
+  let label = '';
   let is3D = false;
 
-  // Transform YouTube watch/short URLs into standard embed URLs to prevent X-Frame-Options blocking
+  // 1. YouTube Video Tours: Transform watch/short URLs into standard embed URLs
   const ytMatch = directUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]+)/i);
   if (ytMatch && ytMatch[1]) {
     embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}`;
-    provider = 'YouTube Video Tour';
-  } else if (directUrl.includes('matterport.com')) {
-    provider = 'Matterport 3D Tour';
+    type = 'video-tour';
+    provider = 'YouTube Video';
+    label = 'Video Tour';
+    is3D = false;
+  }
+  // 2. Modsy 3D Walkthroughs (Genuine spatial interactive 3D model homes)
+  else if (directUrl.includes('modsy.com')) {
+    type = '3d-walkthrough';
+    provider = 'Modsy 3D';
+    label = '3D Walkthrough';
     is3D = true;
-  } else if (directUrl.includes('propertypanorama.com')) {
-    provider = 'Property Panorama 360';
-  } else if (directUrl.includes('homediary.com')) {
-    provider = 'HomeDiary Virtual Tour';
-  } else if (directUrl.includes('modsy.com')) {
-    provider = 'Modsy 3D Walkthrough';
+  }
+  // 3. Matterport 3D Tours (Genuine 3D spatial digital twins)
+  else if (directUrl.includes('matterport.com')) {
+    type = '3d-walkthrough';
+    provider = 'Matterport 3D';
+    label = '3D Walkthrough';
     is3D = true;
-  } else if (directUrl.includes('tourfactory.com')) {
-    provider = 'TourFactory Virtual Tour';
+  }
+
+  // If not a verified 3D walkthrough or YouTube video tour, exclude it to avoid expired/stale provider screens
+  if (!type) {
+    return null;
   }
 
   return {
-    type: 'virtual-tour',
+    type,
     url: directUrl,
     directUrl,
     embedUrl,
     provider,
+    label,
     is3D,
   };
 }
@@ -41,8 +54,14 @@ const router = Router();
 
 router.get('/', async (req, res) => {
   try {
-    const { city, minPrice, maxPrice, minBedrooms, minBaths, propertyType, resultsPerPage } = req.query;
-    const params = { resultsPerPage: resultsPerPage || 20 };
+    const { city, minPrice, maxPrice, minBedrooms, minBaths, propertyType, resultsPerPage, pageNum } = req.query;
+    const page = Math.max(1, parseInt(pageNum, 10) || 1);
+    const limit = Math.max(1, parseInt(resultsPerPage, 10) || 20);
+
+    const params = {
+      pageNum: page,
+      resultsPerPage: limit,
+    };
 
     if (city) params.city = city;
     if (minPrice) params.minPrice = minPrice;
@@ -54,11 +73,9 @@ router.get('/', async (req, res) => {
     const data = await fetchListings(params);
     const listings = (data.listings || []).map((l) => {
       const canDisplay = l.permissions?.displayPublic !== 'N' && l.permissions?.displayInternetEntireListing !== 'N';
-      const tourUrl = l.details?.virtualTourUrl || l.details?.alternateURLVideoLink || null;
-
       let media3d = null;
-      if (canDisplay && tourUrl) {
-        media3d = normalizeTourMedia(tourUrl);
+      if (canDisplay) {
+        media3d = normalizeTourMedia(l.details?.virtualTourUrl) || normalizeTourMedia(l.details?.alternateURLVideoLink);
       }
 
       return {
@@ -77,7 +94,20 @@ router.get('/', async (req, res) => {
       };
     });
 
-    res.json({ count: listings.length, listings });
+    const currentPage = data.page || page;
+    const totalPages = data.numPages || 1;
+    const totalCount = data.count != null ? data.count : listings.length;
+    const hasMore = currentPage < totalPages && listings.length > 0;
+
+    res.json({
+      page: currentPage,
+      numPages: totalPages,
+      pageSize: limit,
+      totalCount,
+      hasMore,
+      count: listings.length,
+      listings,
+    });
   } catch (err) {
     res.status(502).json({ error: 'Failed to fetch listings', detail: err.message });
   }

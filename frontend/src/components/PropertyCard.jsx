@@ -89,25 +89,26 @@ export default function PropertyCard({ listing, onSelect, isSelected, onOpenTour
           {propertyType}
         </span>
 
-        {/* Optional 3D / Virtual Tour Badge */}
+        {/* Distinct 3D Walkthrough vs Video Tour Badge */}
         {listing.media3d?.url && (
           <span style={{
             position: 'absolute',
             top: '8px',
             right: '8px',
-            backgroundColor: 'rgba(30, 27, 75, 0.9)',
+            backgroundColor: listing.media3d.is3D ? 'rgba(30, 27, 75, 0.92)' : 'rgba(127, 29, 29, 0.92)',
             backdropFilter: 'blur(3px)',
-            color: '#e0e7ff',
+            color: listing.media3d.is3D ? '#e0e7ff' : '#fee2e2',
             fontSize: '10px',
-            padding: '3px 7px',
+            padding: '3px 8px',
             borderRadius: '4px',
             fontWeight: 700,
             display: 'flex',
             alignItems: 'center',
             gap: '4px',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+            boxShadow: '0 2px 4px rgba(0,0,0,0.25)',
+            letterSpacing: '0.03em'
           }}>
-            {listing.media3d.is3D ? '🕶️ 3D TOUR' : '🔮 TOUR'}
+            {listing.media3d.is3D ? '🕶️ 3D WALKTHROUGH' : '▶️ VIDEO TOUR'}
           </span>
         )}
       </div>
@@ -134,7 +135,7 @@ export default function PropertyCard({ listing, onSelect, isSelected, onOpenTour
           )}
         </div>
 
-        {/* Optional 3D / Virtual Tour Action Button */}
+        {/* Distinct 3D Walkthrough vs Video Tour Action Button */}
         {listing.media3d?.url && (
           <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed #e2e8f0' }}>
             <button
@@ -152,26 +153,26 @@ export default function PropertyCard({ listing, onSelect, isSelected, onOpenTour
                 padding: '7px 12px',
                 fontSize: '12px',
                 fontWeight: 600,
-                color: '#4338ca',
-                backgroundColor: '#eef2ff',
-                border: '1px solid #c7d2fe',
+                color: listing.media3d.is3D ? '#4338ca' : '#991b1b',
+                backgroundColor: listing.media3d.is3D ? '#eef2ff' : '#fef2f2',
+                border: listing.media3d.is3D ? '1px solid #c7d2fe' : '1px solid #fecaca',
                 borderRadius: '6px',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#e0e7ff';
-                e.currentTarget.style.borderColor = '#a5b4fc';
+                e.currentTarget.style.backgroundColor = listing.media3d.is3D ? '#e0e7ff' : '#fee2e2';
+                e.currentTarget.style.borderColor = listing.media3d.is3D ? '#a5b4fc' : '#fca5a5';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#eef2ff';
-                e.currentTarget.style.borderColor = '#c7d2fe';
+                e.currentTarget.style.backgroundColor = listing.media3d.is3D ? '#eef2ff' : '#fef2f2';
+                e.currentTarget.style.borderColor = listing.media3d.is3D ? '#c7d2fe' : '#fecaca';
               }}
             >
-              <span>{listing.media3d.is3D ? '🕶️' : '🔮'}</span>
-              <span>3D / Virtual Tour</span>
-              <span style={{ fontSize: '10px', opacity: 0.75, fontWeight: 500 }}>
-                ({listing.media3d.provider || 'Interactive'})
+              <span>{listing.media3d.is3D ? '🕶️' : '▶️'}</span>
+              <span>{listing.media3d.label || (listing.media3d.is3D ? '3D Walkthrough' : 'Video Tour')}</span>
+              <span style={{ fontSize: '10px', opacity: 0.8, fontWeight: 500 }}>
+                ({listing.media3d.provider})
               </span>
             </button>
           </div>
